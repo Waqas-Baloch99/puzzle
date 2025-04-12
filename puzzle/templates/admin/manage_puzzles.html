@@ -1,0 +1,302 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .puzzle-management {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .action-header {
+        background: var(--ai-dark);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(0, 212, 255, 0.1);
+        box-shadow: 0 4px 20px var(--ai-shadow);
+    }
+
+    .category-filter .btn {
+        transition: all 0.2s ease;
+        border-width: 2px;
+        margin: 0.2rem;
+    }
+
+    .category-filter .btn-outline-primary {
+        color: var(--ai-primary);
+        border-color: var(--ai-primary);
+        background: transparent;
+    }
+
+    .category-filter .btn-outline-primary:hover,
+    .category-filter .btn-primary {
+        background: rgba(0, 212, 255, 0.1);
+        color: var(--ai-black);
+        border-color: var(--ai-neon);
+    }
+
+    .puzzle-table {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px var(--ai-shadow);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+    }
+
+    .puzzle-table th {
+        background: var(--ai-dark);
+        color: var(--ai-primary);
+        font-weight: 500;
+        border-bottom: 2px solid var(--ai-neon);
+    }
+
+    .puzzle-table td {
+        color: var(--ai-secondary);
+        transition: background 0.2s ease;
+    }
+
+    .puzzle-table tr:hover {
+        background: rgba(0, 212, 255, 0.1);
+    }
+
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        box-shadow: 0 0 5px var(--ai-success);
+    }
+
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        background: var(--ai-dark);
+        border-radius: 12px;
+        color: var(--ai-secondary);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+    }
+
+    .btn-outline-warning {
+        color: var(--bs-warning);
+        border-color: var(--bs-warning);
+    }
+
+    .btn-outline-warning:hover {
+        background: rgba(255, 193, 7, 0.1);
+        color: var(--bs-warning);
+    }
+
+    .btn-outline-danger {
+        color: var(--ai-danger);
+        border-color: var(--ai-danger);
+    }
+
+    .btn-outline-danger:hover {
+        background: rgba(255, 51, 102, 0.1);
+        color: var(--ai-danger);
+    }
+
+    .category-group {
+        margin-bottom: 1rem;
+    }
+
+    .category-label {
+        color: var(--ai-primary);
+        font-weight: 500;
+        margin-right: 1rem;
+    }
+
+    .badge-mcq {
+        background: var(--ai-success);
+    }
+
+    .badge-code {
+        background: var(--ai-warning);
+    }
+
+    .badge-topic {
+        background: var(--ai-info);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="puzzle-management">
+    <div class="action-header">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-light animate-glow">
+                <i class="bi bi-puzzle me-2"></i>Roadmap Puzzle Management
+            </h1>
+            <div class="d-flex gap-2">
+                <a href="{% url 'custom_admin:generate-puzzles' %}" class="btn btn-outline-neon">
+                    <i class="bi bi-magic me-2"></i>Generate Puzzles
+                </a>
+                <a href="{% url 'custom_admin:puzzle_puzzle_add' %}" class="btn btn-outline-neon">
+                    <i class="bi bi-plus-lg me-2"></i>Create Puzzle
+                </a>
+            </div>
+        </div>
+
+        <div class="category-filter">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="text-muted">Filter by:</span>
+                <a href="?category=all" class="btn {% if active_category == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    All
+                </a>
+            </div>
+            <div class="category-group">
+                <span class="category-label">Python</span>
+                <a href="?category=PY&level=beginner" class="btn {% if active_category == 'PY' and active_level == 'beginner' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Beginner
+                </a>
+                <a href="?category=PY&level=intermediate" class="btn {% if active_category == 'PY' and active_level == 'intermediate' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Intermediate
+                </a>
+                <a href="?category=PY&level=expert" class="btn {% if active_category == 'PY' and active_level == 'expert' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Expert
+                </a>
+            </div>
+            <div class="category-group">
+                <span class="category-label">AI/ML</span>
+                <a href="?category=AI&level=beginner" class="btn {% if active_category == 'AI' and active_level == 'beginner' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Beginner
+                </a>
+                <a href="?category=AI&level=intermediate" class="btn {% if active_category == 'AI' and active_level == 'intermediate' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Intermediate
+                </a>
+                <a href="?category=AI&level=expert" class="btn {% if active_category == 'AI' and active_level == 'expert' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Expert
+                </a>
+            </div>
+            <div class="category-group">
+                <span class="category-label">Data Science</span>
+                <a href="?category=DS&level=beginner" class="btn {% if active_category == 'DS' and active_level == 'beginner' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Beginner
+                </a>
+                <a href="?category=DS&level=intermediate" class="btn {% if active_category == 'DS' and active_level == 'intermediate' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Intermediate
+                </a>
+                <a href="?category=DS&level=expert" class="btn {% if active_category == 'DS' and active_level == 'expert' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                    Expert
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive puzzle-table">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Roadmap Topic</th>
+                    <th>Category</th>
+                    <th>Level</th>
+                    <th>Type</th>
+                    <th>XP Reward</th>
+                    <th>Created</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for puzzle in puzzles %}
+                <tr>
+                    <td>
+                        <span class="status-indicator bg-success"></span>
+                        <span class="text-light">{{ puzzle.title }}</span>
+                    </td>
+                    <td>
+                        {% if puzzle.roadmap_topic %}
+                            <span class="badge rounded-pill badge-topic">
+                                {{ puzzle.roadmap_topic.title }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">Not Assigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill bg-primary">
+                            {% if puzzle.category == 'PY' %}Python{% elif puzzle.category == 'AI' %}AI/ML{% else %}Data Science{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill bg-secondary">
+                            {{ puzzle.level|capfirst }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill {% if puzzle.puzzle_type == 'mcq' %}badge-mcq{% else %}badge-code{% endif %}">
+                            {{ puzzle.puzzle_type|capfirst }}
+                        </span>
+                    </td>
+                    <td>{{ puzzle.xp_reward }}</td>
+                    <td>{{ puzzle.created_at|date:"M d, Y" }}</td>
+                    <td class="text-end">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'custom_admin:edit-puzzle' puzzle.id %}" 
+                               class="btn btn-sm btn-outline-warning"
+                               data-bs-toggle="tooltip" 
+                               title="Edit Puzzle">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'custom_admin:delete-puzzle' puzzle.id %}" 
+                               class="btn btn-sm btn-outline-danger"
+                               data-bs-toggle="tooltip" 
+                               title="Delete Puzzle">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <i class="bi bi-puzzle display-5 text-muted mb-3 animate-glow"></i>
+                            <h3 class="h5 text-light">No Puzzles Found</h3>
+                            <p class="text-muted">Start by generating or creating a new puzzle for the roadmap</p>
+                            <div class="d-flex justify-content-center gap-2 mt-2">
+                                <a href="{% url 'custom_admin:generate-puzzles' %}" class="btn btn-outline-neon">
+                                    <i class="bi bi-magic me-2"></i>Generate Puzzles
+                                </a>
+                                <a href="{% url 'custom_admin:puzzle_puzzle_add' %}" class="btn btn-outline-neon">
+                                    <i class="bi bi-plus-lg me-2"></i>Create Puzzle
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script>
+    // Initialize Bootstrap tooltips
+    document.addEventListener('DOMContentLoaded', () => {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltipTriggerList].forEach(tooltipTriggerEl => {
+            new bootstrap.Tooltip(tooltipTriggerEl, {
+                customClass: 'tooltip-ai'
+            });
+        });
+    });
+</script>
+<style>
+    /* Custom tooltip styling for AI theme */
+    .tooltip-ai .tooltip-inner {
+        background: var(--ai-dark);
+        color: var(--ai-primary);
+        border: 1px solid var(--ai-neon);
+    }
+    .tooltip-ai .tooltip-arrow::before {
+        border-color: var(--ai-neon);
+    }
+</style>
+{% endblock %}

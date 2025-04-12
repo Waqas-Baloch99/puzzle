@@ -1,0 +1,210 @@
+{% extends 'puzzle/base.html' %}
+
+{% block title %}{{ puzzle.title }}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .card {
+        background-color: var(--rpg-slate);
+        border: 1px solid rgba(218, 165, 32, 0.2);
+        color: var(--rpg-light);
+    }
+    .card-title {
+        color: var(--rpg-gold);
+    }
+    .card-text {
+        color: var(--rpg-light);
+    }
+    .badge {
+        font-size: 0.9rem;
+    }
+    .test-cases pre {
+        background-color: #2a2a2a;
+        color: #e0e0e0;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        font-size: 0.9rem;
+    }
+    .btn-primary {
+        background-color: var(--rpg-gold);
+        border-color: var(--rpg-gold);
+        color: #000;
+    }
+    .btn-primary:hover {
+        background-color: rgba(218, 165, 32, 0.8);
+    }
+    .btn-secondary {
+        border-color: var(--rpg-gold);
+        color: var(--rpg-gold);
+    }
+    .btn-secondary:hover {
+        background-color: rgba(218, 165, 32, 0.2);
+        color: #000;
+    }
+    .submission-history pre {
+        background-color: #2a2a2a;
+        color: #e0e0e0;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+    }
+    .mcq-options {
+        margin-top: 1.5rem;
+    }
+    .mcq-option {
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid rgba(218, 165, 32, 0.2);
+        border-radius: 8px;
+        background: rgba(42, 42, 42, 0.5);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .mcq-option .option-key {
+        font-weight: 600;
+        color: var(--rpg-gold);
+        min-width: 30px;
+    }
+    .mcq-option .option-text {
+        flex: 1;
+    }
+    .mcq-option.correct {
+        border-color: #10b981;
+        background: rgba(16, 185, 129, 0.1);
+    }
+    .mcq-option.incorrect {
+        border-color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+    }
+    .puzzle-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .meta-item {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .meta-difficulty {
+        background: rgba(218, 165, 32, 0.2);
+        color: var(--rpg-gold);
+    }
+    .meta-xp {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+    .meta-type {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4" style="color: var(--rpg-gold);">{{ puzzle.title }}</h1>
+    
+    <div class="puzzle-meta">
+        <span class="meta-item meta-difficulty">
+            <i class="bi bi-lightning-charge-fill"></i>
+            {{ puzzle.get_level_display }}
+        </span>
+        <span class="meta-item meta-xp">
+            <i class="bi bi-star-fill"></i>
+            {{ puzzle.xp_reward }} XP
+        </span>
+        <span class="meta-item meta-type">
+            <i class="bi {% if puzzle.puzzle_type == 'mcq' %}bi-list-check{% else %}bi-code-slash{% endif %}"></i>
+            {{ type_display }}
+        </span>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} mb-3">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Description</h5>
+                    <p class="card-text">{{ puzzle.description|linebreaks }}</p>
+
+                    {% if puzzle.puzzle_type == 'mcq' %}
+                        <div class="mcq-options">
+                            <h6 class="mb-3">Multiple Choice Options:</h6>
+                            {% for key, value in puzzle.test_cases.items %}
+                                <div class="mcq-option {% if submission and submission.answer == key %}{% if submission.is_correct %}correct{% else %}incorrect{% endif %}{% endif %}">
+                                    <span class="option-key">{{ key }}</span>
+                                    <span class="option-text">{{ value }}</span>
+                                    {% if submission and submission.answer == key %}
+                                        {% if submission.is_correct %}
+                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                        {% else %}
+                                            <i class="bi bi-x-circle-fill text-danger"></i>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Submission Status</h5>
+                    {% if is_solved %}
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle-fill me-2"></i>You've already solved this puzzle!
+                        </div>
+                    {% elif submission %}
+                        <div class="alert {% if submission.is_correct %}alert-success{% else %}alert-warning{% endif %}">
+                            <i class="bi {% if submission.is_correct %}bi-check-circle-fill{% else %}bi-exclamation-circle-fill{% endif %} me-2"></i>
+                            {% if puzzle.puzzle_type == 'mcq' %}
+                                Your answer: <strong>{{ submission.answer }}</strong>
+                                {% if submission.is_correct %}
+                                    <span class="text-success ms-2">Correct!</span>
+                                {% else %}
+                                    <span class="text-danger ms-2">Incorrect</span>
+                                {% endif %}
+                            {% else %}
+                                {% if submission.is_correct %}
+                                    Your solution was correct!
+                                {% else %}
+                                    Your solution needs some work.
+                                    {% if submission.feedback %}
+                                        <p class="mt-2">Feedback: {{ submission.feedback }}</p>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">You haven't submitted a solution yet.</p>
+                    {% endif %}
+
+                    <div class="mt-3">
+                        <a href="{% url 'puzzle:solve' puzzle.id %}" class="btn btn-primary">
+                            <i class="bi bi-terminal me-2"></i>
+                            {% if submission and not submission.is_correct %}Retry{% else %}Solve{% endif %}
+                        </a>
+                        <a href="{% url 'puzzle:puzzles' %}" class="btn btn-secondary ms-2">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Puzzles
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

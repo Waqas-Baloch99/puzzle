@@ -1,0 +1,171 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .edit-form {
+        background: var(--ai-dark);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px var(--ai-shadow);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+    }
+    .form-label {
+        color: var(--ai-primary);
+    }
+    .form-control, .form-select {
+        background: var(--ai-black);
+        color: var(--ai-secondary);
+        border-color: rgba(0, 212, 255, 0.2);
+    }
+    .form-control:focus {
+        border-color: var(--ai-neon);
+        box-shadow: 0 0 5px var(--ai-shadow);
+    }
+    .mcq-options .input-group {
+        margin-bottom: 1rem;
+    }
+    .mcq-options .form-check {
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="puzzle-management" style="max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem;">
+    <div class="edit-form">
+        <h1 class="h3 mb-4 text-light animate-glow">
+            <i class="bi bi-pencil me-2"></i>{{ title }}
+            <span class="badge {% if puzzle.puzzle_type == 'mcq' %}bg-success{% else %}bg-warning{% endif %} ms-2">
+                {{ puzzle.puzzle_type|capfirst }}
+            </span>
+        </h1>
+
+        {% if success %}
+            <div class="alert alert-success shadow-sm">
+                <i class="bi bi-check-circle-fill me-2"></i>{{ success }}
+            </div>
+        {% endif %}
+
+        {% if error %}
+            <div class="alert alert-danger shadow-sm">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+            </div>
+        {% endif %}
+
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="title" name="title" value="{{ puzzle.title }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required>{{ puzzle.description }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" id="category" name="category" required>
+                    <option value="PY" {% if puzzle.category == 'PY' %}selected{% endif %}>Python</option>
+                    <option value="AI" {% if puzzle.category == 'AI' %}selected{% endif %}>AI/ML</option>
+                    <option value="DS" {% if puzzle.category == 'DS' %}selected{% endif %}>Data Science</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="level" class="form-label">Level</label>
+                <select class="form-select" id="level" name="level" required onchange="togglePuzzleType(this)">
+                    <option value="beginner" {% if puzzle.level == 'beginner' %}selected{% endif %}>Beginner</option>
+                    <option value="intermediate" {% if puzzle.level == 'intermediate' %}selected{% endif %}>Intermediate</option>
+                    <option value="expert" {% if puzzle.level == 'expert' %}selected{% endif %}>Expert</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="xp_reward" class="form-label">XP Reward</label>
+                <input type="number" class="form-control" id="xp_reward" name="xp_reward" value="{{ puzzle.xp_reward }}" required>
+            </div>
+
+            {% if puzzle.puzzle_type == 'mcq' %}
+            <!-- MCQ Fields -->
+            <div class="mb-3 mcq-options">
+                <label class="form-label">Options</label>
+                {% with options=puzzle.test_cases %}
+                <div class="input-group">
+                    <span class="input-group-text">A</span>
+                    <input type="text" class="form-control" name="option_a" value="{{ options.A }}" required>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-text">B</span>
+                    <input type="text" class="form-control" name="option_b" value="{{ options.B }}" required>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-text">C</span>
+                    <input type="text" class="form-control" name="option_c" value="{{ options.C }}" required>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-text">D</span>
+                    <input type="text" class="form-control" name="option_d" value="{{ options.D }}" required>
+                </div>
+                {% endwith %}
+                <div class="form-check">
+                    <label class="form-label">Correct Answer</label>
+                    <select class="form-select" id="solution-mcq" name="solution" required>
+                        <option value="A" {% if puzzle.solution == 'A' %}selected{% endif %}>A</option>
+                        <option value="B" {% if puzzle.solution == 'B' %}selected{% endif %}>B</option>
+                        <option value="C" {% if puzzle.solution == 'C' %}selected{% endif %}>C</option>
+                        <option value="D" {% if puzzle.solution == 'D' %}selected{% endif %}>D</option>
+                    </select>
+                </div>
+            </div>
+            {% else %}
+            <!-- Coding Puzzle Fields -->
+            <div class="mb-3 coding-fields">
+                <label for="test_cases" class="form-label">Test Cases (JSON)</label>
+                <textarea class="form-control" id="test_cases" name="test_cases" rows="5" required>{{ puzzle.test_cases|json_script:"test_cases"|safe }}</textarea>
+            </div>
+            <div class="mb-3 coding-fields">
+                <label for="solution" class="form-label">Solution Code</label>
+                <textarea class="form-control" id="solution" name="solution" rows="5" required>{{ puzzle.solution }}</textarea>
+            </div>
+            {% endif %}
+
+            <div class="d-flex gap-2">
+                <button type="submit" name="action" value="save" class="btn btn-outline-neon">
+                    <i class="bi bi-save me-2"></i>Save Changes
+                </button>
+                <button type="submit" name="action" value="update_with_llm" class="btn btn-outline-primary">
+                    <i class="bi bi-magic me-2"></i>Update with LLM
+                </button>
+                <a href="{% url 'custom_admin:manage-puzzles' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Puzzles
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script>
+    function togglePuzzleType(select) {
+        const level = select.value;
+        const mcqFields = document.querySelector('.mcq-options');
+        const codingFields = document.querySelectorAll('.coding-fields');
+        
+        if (level === 'beginner') {
+            if (mcqFields) mcqFields.style.display = 'block';
+            codingFields.forEach(field => field.style.display = 'none');
+        } else {
+            if (mcqFields) mcqFields.style.display = 'none';
+            codingFields.forEach(field => field.style.display = 'block');
+        }
+    }
+
+    // Initial toggle based on current level
+    document.addEventListener('DOMContentLoaded', () => {
+        const levelSelect = document.getElementById('level');
+        togglePuzzleType(levelSelect);
+    });
+</script>
+{% endblock %}

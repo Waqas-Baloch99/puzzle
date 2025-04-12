@@ -1,0 +1,104 @@
+:root {
+    --ai-black: #1a1a1a;
+    --ai-dark: #2d2d2d;
+    --ai-primary: #00d4ff;
+    --ai-secondary: #b0b0b0;
+    --ai-success: #00ff9d;
+    --ai-danger: #ff3366;
+    --ai-neon: #00d4ff;
+    --ai-shadow: rgba(0, 212, 255, 0.2);
+}
+
+.admin-body {
+    background: var(--ai-black);
+    min-height: 100vh;
+    padding-top: 70px;
+    color: var(--ai-secondary);
+}
+
+.bg-ai-gradient {
+    background: linear-gradient(135deg, var(--ai-dark), #1e1e1e);
+    border-bottom: 1px solid var(--ai-neon);
+}
+
+.hover-scale {
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.hover-scale:hover {
+    transform: translateY(-1px);
+    color: var(--ai-primary);
+}
+
+.admin-main {
+    padding: 2rem 0;
+}
+
+.admin-content {
+    background: var(--ai-dark);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px var(--ai-shadow);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.user-panel {
+    color: var(--ai-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    background: rgba(0, 212, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.user-panel:hover {
+    background: rgba(0, 212, 255, 0.2);
+    box-shadow: 0 0 10px var(--ai-shadow);
+}
+
+.alert {
+    border: none;
+    border-left: 4px solid var(--ai-primary);
+    background: var(--ai-dark);
+    color: var(--ai-secondary);
+}
+
+.alert-success {
+    border-left-color: var(--ai-success);
+}
+
+.alert-danger {
+    border-left-color: var(--ai-danger);
+}
+
+.btn-outline-neon {
+    border-color: var(--ai-neon);
+    color: var(--ai-neon);
+}
+
+.btn-outline-neon:hover {
+    background: rgba(0, 212, 255, 0.1);
+    box-shadow: 0 0 10px var(--ai-shadow);
+}
+
+.border-ai {
+    border-color: rgba(0, 212, 255, 0.2) !important;
+}
+
+.animate-glow {
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 5px var(--ai-neon);
+    }
+    to {
+        text-shadow: 0 0 15px var(--ai-neon), 0 0 25px var(--ai-neon);
+    }
+}
+
+/* Active nav link styling */
+.nav-link.active {
+    color: var(--ai-primary) !important;
+    border-bottom: 2px solid var(--ai-primary);
+}

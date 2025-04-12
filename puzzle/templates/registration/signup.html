@@ -1,0 +1,226 @@
+{% extends 'puzzle/base.html' %}
+
+{% block title %}Join Python Puzzle{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .card {
+        background-color: var(--rpg-slate);
+        border: 1px solid rgba(218, 165, 32, 0.2);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    .card-title {
+        color: var(--rpg-gold);
+        font-family: 'MedievalSharp', cursive;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .form-label {
+        color: var(--rpg-light);
+    }
+    .input-group-text {
+        background-color: var(--rpg-slate);
+        border-color: rgba(218, 165, 32, 0.2);
+        color: var(--rpg-gold);
+    }
+    .form-control {
+        background-color: var(--rpg-slate);
+        color: var(--rpg-light);
+        border-color: rgba(218, 165, 32, 0.2);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .form-control:focus {
+        border-color: var(--rpg-gold);
+        box-shadow: 0 0 5px rgba(218, 165, 32, 0.5);
+    }
+    .form-control.is-invalid {
+        border-color: var(--rpg-red);
+    }
+    .invalid-feedback {
+        color: var(--rpg-red);
+    }
+    .btn-primary {
+        background-color: var(--rpg-gold);
+        border-color: var(--rpg-gold);
+        color: #000;
+        transition: background-color 0.2s ease;
+    }
+    .btn-primary:hover {
+        background-color: rgba(218, 165, 32, 0.8);
+    }
+    .text-muted {
+        color: rgba(224, 224, 224, 0.7) !important;
+    }
+    .text-muted a {
+        color: var(--rpg-gold);
+        transition: color 0.2s ease;
+    }
+    .text-muted a:hover {
+        color: #ffca28;
+    }
+    .alert-danger {
+        background-color: rgba(139, 0, 0, 0.1);
+        border-color: var(--rpg-red);
+        color: var(--rpg-light);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">
+                        <i class="bi bi-person-plus me-2"></i>Create Account
+                    </h2>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Please correct the errors below
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label">
+                                <i class="bi bi-envelope-at me-1"></i>Email Address
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                                <input type="email" 
+                                       name="email" 
+                                       class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
+                                       id="id_email"
+                                       placeholder="Enter your email"
+                                       value="{{ form.email.value|default:'' }}"
+                                       required>
+                            </div>
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.email.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_first_name" class="form-label">
+                                        <i class="bi bi-person me-1"></i>First Name
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-card-text"></i>
+                                        </span>
+                                        <input type="text" 
+                                               name="first_name" 
+                                               class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" 
+                                               id="id_first_name"
+                                               placeholder="First name"
+                                               value="{{ form.first_name.value|default:'' }}"
+                                               required>
+                                    </div>
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.first_name.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_last_name" class="form-label">
+                                        <i class="bi bi-person me-1"></i>Last Name
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-card-text"></i>
+                                        </span>
+                                        <input type="text" 
+                                               name="last_name" 
+                                               class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" 
+                                               id="id_last_name"
+                                               placeholder="Last name"
+                                               value="{{ form.last_name.value|default:'' }}"
+                                               required>
+                                    </div>
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.last_name.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_password1" class="form-label">
+                                <i class="bi bi-lock me-1"></i>Password
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-key"></i>
+                                </span>
+                                <input type="password" 
+                                       name="password1" 
+                                       class="form-control {% if form.password1.errors %}is-invalid{% endif %}" 
+                                       id="id_password1"
+                                       placeholder="Create a password (8+ characters)"
+                                       required>
+                            </div>
+                            {% if form.password1.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.password1.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="id_password2" class="form-label">
+                                <i class="bi bi-lock me-1"></i>Confirm Password
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-key-fill"></i>
+                                </span>
+                                <input type="password" 
+                                       name="password2" 
+                                       class="form-control {% if form.password2.errors %}is-invalid{% endif %}" 
+                                       id="id_password2"
+                                       placeholder="Confirm your password"
+                                       required>
+                            </div>
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.password2.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="bi bi-person-check me-2"></i>Create Account
+                        </button>
+                        
+                        <div class="text-center border-top pt-3">
+                            <p class="text-muted mb-0">
+                                Already have an account? 
+                                <a href="{% url 'puzzle:login' %}" class="fw-medium">
+                                    Login Here
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1861 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Python Puzzle{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
+
+    <!-- Highlight.js for code highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- Vis Network for roadmap visualization -->
+    <link href="https://unpkg.com/vis-network/dist/dist/vis-network.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://unpkg.com/vis-network/dist/vis-network.min.js"></script>
+
+    <script>
+        // Configure marked.js
+        marked.use({
+            breaks: true,
+            gfm: true
+        });
+    </script>
+
+    <style>
+        :root {
+            --rpg-gold: #DAA520;
+            --rpg-gold-light: #FFD700;
+            --rpg-slate-dark: #1E293B;
+            --rpg-slate-light: #334155;
+            --bg-dark: #0f172a;
+            --bg-medium: #1e293b;
+            --bg-light: #334155;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: #2d3748;
+            
+            /* Sidebar dimensions */
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --navbar-height: 70px;
+        }
+
+        /* Dark mode colors */
+        html.dark {
+            --bg-dark: #111827;
+            --bg-medium: #1f2937;
+            --bg-light: #374151;
+            --text-light: #f9fafb;
+            --text-muted: #9ca3af;
+        }
+
+        /* Light mode colors */
+        html:not(.dark) {
+            --bg-dark: #f8fafc;
+            --bg-medium: #f1f5f9;
+            --bg-light: #e2e8f0;
+            --text-light: #1e293b;
+            --text-muted: #64748b;
+            --border-color: rgba(218, 165, 32, 0.5);
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(218, 165, 32, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(218, 165, 32, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(218, 165, 32, 0.5); }
+        }
+
+        /* Top Navbar Styling */
+        .navbar {
+            background-color: var(--bg-medium);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 0.75rem 0;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1030;
+            height: var(--navbar-height);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .navbar-brand {
+            font-family: 'MedievalSharp', cursive;
+            font-size: 2.2rem;
+            color: var(--rpg-gold) !important;
+            text-shadow: 0 0 10px rgba(218, 165, 32, 0.3);
+            transition: all 0.3s ease;
+            padding: 0.25rem 0;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand:hover {
+            color: var(--rpg-gold-light) !important;
+            text-shadow: 0 0 15px rgba(218, 165, 32, 0.5);
+            transform: scale(1.05);
+        }
+
+        .python-logo {
+            height: 36px;
+            margin-right: 10px;
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        .nav-item {
+            margin: 0 0.25rem;
+        }
+
+        .nav-link {
+            color: var(--text-light) !important;
+            transition: all 0.3s ease;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-link:hover {
+            color: var(--rpg-gold) !important;
+            transform: translateY(-2px);
+            background-color: rgba(218, 165, 32, 0.1);
+        }
+
+        .nav-link.active {
+            color: var(--rpg-gold) !important;
+            font-weight: 600;
+            background-color: rgba(218, 165, 32, 0.15);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 2px;
+            background-color: var(--rpg-gold);
+            border-radius: 2px;
+        }
+
+        /* XP Badge Styling */
+        .badge.bg-warning {
+            background-color: var(--rpg-gold) !important;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            color: #000 !important;
+        }
+
+        .badge.bg-warning:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(218, 165, 32, 0.3);
+        }
+
+        .user-menu-header .badge.bg-warning {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* Dropdown Menu Styling */
+        .dropdown-menu {
+            background-color: var(--bg-medium);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-top: 0.5rem;
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+
+        .user-menu-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .user-menu-item {
+            color: var(--text-light);
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .user-menu-item:hover {
+            background-color: rgba(218, 165, 32, 0.1);
+            color: var(--rpg-gold);
+        }
+
+        .user-menu-item i {
+            width: 1.5rem;
+            color: var(--rpg-gold);
+        }
+
+        .navbar-toggler {
+            border-color: var(--rpg-gold);
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-toggler:hover {
+            background-color: rgba(218, 165, 32, 0.1);
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.3);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(218, 165, 32, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            position: fixed;
+            top: var(--navbar-height);
+            left: 0;
+            height: calc(100vh - var(--navbar-height));
+            width: var(--sidebar-width);
+            background-color: var(--bg-medium);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1020;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            padding-top: 0.5rem;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-toggle-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1;
+        }
+
+        .sidebar-toggle {
+            background: transparent;
+            border: none;
+            color: var(--rpg-gold);
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+        }
+
+        .sidebar-toggle:hover {
+            color: var(--rpg-gold-light);
+            background-color: rgba(218, 165, 32, 0.1);
+            transform: scale(1.1);
+            animation: glow 1.5s infinite;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 1rem 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .sidebar-item {
+            margin: 0.5rem 0;
+            animation: fadeIn 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .sidebar-item:nth-child(1) { animation-delay: 0.1s; }
+        .sidebar-item:nth-child(2) { animation-delay: 0.2s; }
+        .sidebar-item:nth-child(3) { animation-delay: 0.3s; }
+        .sidebar-item:nth-child(4) { animation-delay: 0.4s; }
+        .sidebar-item:nth-child(5) { animation-delay: 0.5s; }
+
+        /* Sidebar Links */
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin: 0.25rem 0.75rem;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(218, 165, 32, 0.1);
+            color: var(--rpg-gold);
+            transform: translateX(5px);
+        }
+
+        .sidebar-link.active {
+            background-color: rgba(218, 165, 32, 0.15);
+            color: var(--rpg-gold);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-icon {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+            min-width: 1.25rem;
+            text-align: center;
+            color: var(--rpg-gold);
+        }
+
+        .sidebar-text {
+            opacity: 1;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .collapsed .sidebar-text {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+            transform: translateX(10px);
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            margin: 0.75rem 1rem;
+            background-color: var(--border-color);
+        }
+
+        /* User Menu Styling */
+        .user-menu {
+            background-color: var(--bg-medium);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .user-menu-header {
+            background-color: rgba(218, 165, 32, 0.1);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-menu-item {
+            padding: 0.75rem 1rem;
+            transition: all 0.2s ease;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+        }
+
+        .user-menu-item:hover {
+            background-color: rgba(218, 165, 32, 0.1);
+            color: var(--rpg-gold);
+            transform: translateX(5px);
+        }
+
+        .user-menu-item i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+            color: var(--rpg-gold);
+        }
+
+        /* Community Link */
+        .sidebar-community-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(218, 165, 32, 0.15);
+            color: var(--rpg-gold);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 1rem;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.5s ease-out;
+            animation-delay: 0.6s;
+            animation-fill-mode: both;
+        }
+
+        .sidebar-community-link:hover {
+            background-color: var(--rpg-gold);
+            color: var(--bg-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: glow 1.5s infinite;
+        }
+
+        .sidebar-community-link i {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        .collapsed .sidebar-community-link {
+            padding: 0.75rem;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            margin: 1rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .collapsed .sidebar-community-link i {
+            margin-right: 0;
+        }
+
+        /* User Info in Sidebar */
+        .user-info {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background-color: rgba(218, 165, 32, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--rpg-gold);
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .collapsed .user-avatar {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto;
+        }
+
+        .user-details {
+            overflow: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--rpg-gold);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-email {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .collapsed .user-details {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            transform: translateX(10px);
+        }
+
+        /* Theme Toggle Button */
+        #themeToggle {
+            background-color: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        #themeToggle:hover {
+            background-color: rgba(218, 165, 32, 0.15);
+            color: var(--rpg-gold);
+            transform: rotate(30deg);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+            margin-top: var(--navbar-height);
+        }
+
+        .main-content.expanded {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        /* Alert Styling */
+        .alert {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .alert-success {
+            border-color: #10b981;
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+
+        .alert-warning {
+            border-color: var(--rpg-gold);
+            background-color: rgba(218, 165, 32, 0.1);
+        }
+
+        .alert-danger {
+            border-color: var(--rpg-red);
+            background-color: rgba(139, 0, 0, 0.1);
+        }
+
+        /* Button styling */
+        .btn-primary {
+            background-color: var(--rpg-gold);
+            border-color: var(--rpg-gold);
+            color: var(--bg-dark);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--rpg-gold-light);
+            border-color: var(--rpg-gold-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3);
+        }
+
+        .btn-outline-primary {
+            color: var(--rpg-gold);
+            border-color: var(--rpg-gold);
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--rpg-gold);
+            color: var(--bg-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            .navbar-collapse {
+                background-color: var(--bg-medium);
+                border-radius: 12px;
+                padding: 1rem;
+                margin-top: 1rem;
+                border: 1px solid var(--border-color);
+                animation: fadeIn 0.3s ease-out;
+            }
+            
+            .nav-item {
+                margin: 0.25rem 0;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                box-shadow: none;
+                top: 0;
+                height: 100vh;
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2);
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                margin-top: var(--navbar-height);
+            }
+            
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1015;
+                display: none;
+                backdrop-filter: blur(3px);
+                transition: opacity 0.3s ease;
+                opacity: 0;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+                opacity: 1;
+            }
+        }
+
+        /* Virtual Assistant Chatbox */
+        .virtual-assistant {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .chat-trigger {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--rpg-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            padding: 8px;
+        }
+
+        .chat-trigger:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .chat-trigger .python-chat-logo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+
+        .chat-box {
+            width: 350px;
+            height: 500px;
+            background-color: var(--bg-medium);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 15px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+        }
+
+        .chat-box.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background-color: var(--bg-dark);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--rpg-gold);
+            font-weight: 600;
+        }
+
+        .chat-title .python-mini-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+            overflow: hidden;
+        }
+
+        .message-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .chat-trigger:hover .python-chat-logo {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .message.assistant .message-avatar img {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .chat-title .python-mini-logo {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .chat-close {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .chat-close:hover {
+            color: var(--rpg-gold);
+            transform: scale(1.2);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scroll-behavior: smooth;
+            background-color: var(--bg-medium);
+            min-height: 0;
+            max-height: calc(100% - 120px);
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+            gap: 4px;
+            animation: fadeIn 0.3s ease-out;
+            margin-bottom: 8px;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message-content {
+            padding: 16px 20px;
+            border-radius: 16px;
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            line-height: 1.5;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
+        }
+
+        .message-content p {
+            margin-bottom: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .message-content p strong {
+            font-size: 16px;
+            color: var(--rpg-gold);
+            display: block;
+            margin-bottom: 8px;
+            margin-top: 16px;
+        }
+
+        .message-content ul {
+            margin-bottom: 16px;
+            padding-left: 8px;
+            list-style-type: none;
+        }
+
+        .message-content ul li {
+            margin-bottom: 10px;
+            font-size: 14px;
+            position: relative;
+            padding-left: 24px;
+            line-height: 1.5;
+        }
+
+        .message-content ul li::before {
+            content: attr(data-emoji);
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 16px;
+        }
+
+        .message.assistant .message-content {
+            border-bottom-left-radius: 4px;
+            background-color: rgba(218, 165, 32, 0.1);
+            max-width: 100%;
+        }
+
+        .message.assistant .message-content ul li {
+            opacity: 0;
+            animation: slideInRight 0.5s ease-out forwards;
+        }
+
+        .message.assistant .message-content ul:nth-of-type(1) li:nth-child(1) { animation-delay: 0.2s; }
+        .message.assistant .message-content ul:nth-of-type(1) li:nth-child(2) { animation-delay: 0.4s; }
+        .message.assistant .message-content ul:nth-of-type(1) li:nth-child(3) { animation-delay: 0.6s; }
+        .message.assistant .message-content ul:nth-of-type(1) li:nth-child(4) { animation-delay: 0.8s; }
+        .message.assistant .message-content ul:nth-of-type(1) li:nth-child(5) { animation-delay: 1.0s; }
+
+        .message.assistant .message-content ul:nth-of-type(2) li:nth-child(1) { animation-delay: 1.2s; }
+        .message.assistant .message-content ul:nth-of-type(2) li:nth-child(2) { animation-delay: 1.4s; }
+        .message.assistant .message-content ul:nth-of-type(2) li:nth-child(3) { animation-delay: 1.6s; }
+        .message.assistant .message-content ul:nth-of-type(2) li:nth-child(4) { animation-delay: 1.8s; }
+        .message.assistant .message-content ul:nth-of-type(2) li:nth-child(5) { animation-delay: 2.0s; }
+
+        .message.assistant .message-content ul:nth-of-type(3) li:nth-child(1) { animation-delay: 2.2s; }
+        .message.assistant .message-content ul:nth-of-type(3) li:nth-child(2) { animation-delay: 2.4s; }
+        .message.assistant .message-content ul:nth-of-type(3) li:nth-child(3) { animation-delay: 2.6s; }
+        .message.assistant .message-content ul:nth-of-type(3) li:nth-child(4) { animation-delay: 2.8s; }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .message-content {
+                padding: 14px 16px;
+            }
+
+            .message-content p {
+                font-size: 13px;
+            }
+
+            .message-content p strong {
+                font-size: 15px;
+            }
+
+            .message-content ul {
+                margin-bottom: 14px;
+            }
+
+            .message-content ul li {
+                font-size: 13px;
+                margin-bottom: 8px;
+                padding-left: 20px;
+            }
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 10px 15px;
+            background-color: rgba(218, 165, 32, 0.15);
+            border-radius: 15px;
+            border-bottom-left-radius: 5px;
+            align-self: flex-start;
+            max-width: 80px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--rpg-gold);
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+
+        .typing-dot:nth-child(1) { animation: typingDot 1.5s infinite 0s; }
+        .typing-dot:nth-child(2) { animation: typingDot 1.5s infinite 0.3s; }
+        .typing-dot:nth-child(3) { animation: typingDot 1.5s infinite 0.6s; }
+
+        @keyframes typingDot {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Chat Input Area */
+        .chat-input {
+            padding: 16px;
+            background-color: var(--bg-dark);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 16px;
+            padding-right: 100px; /* Space for buttons */
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-medium);
+            color: var(--text-light);
+            font-size: 14px;
+            transition: all 0.3s ease;
+            min-height: 45px;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            border-color: var(--rpg-gold);
+            box-shadow: 0 0 0 2px rgba(218, 165, 32, 0.2);
+        }
+
+        .chat-input input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .chat-actions {
+            position: absolute;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-input button#send-message {
+            height: 40px;
+            padding: 0 16px;
+            border-radius: 20px;
+            border: none;
+            background-color: var(--rpg-gold);
+            color: var(--bg-dark);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .chat-input button#send-message:hover {
+            background-color: var(--rpg-gold-light);
+            transform: translateY(-2px);
+        }
+
+        .chat-input button#send-message i {
+            font-size: 16px;
+        }
+
+        .chat-input .voice-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--bg-medium);
+            color: var(--rpg-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .chat-input .voice-btn:hover {
+            background-color: rgba(218, 165, 32, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .chat-input .voice-btn i {
+            font-size: 18px;
+        }
+
+        /* Scrollbar Styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--bg-medium);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: var(--rpg-gold);
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background-color: var(--rpg-gold-light);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .chat-box {
+                width: calc(100% - 40px);
+                height: calc(100vh - 120px);
+                bottom: 80px;
+                max-height: 80vh;
+            }
+
+            .chat-messages {
+                max-height: calc(100% - 130px);
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .message-content {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-box {
+                width: calc(100% - 20px);
+                right: 10px;
+                bottom: 70px;
+                max-height: 75vh;
+            }
+
+            .chat-messages {
+                padding: 16px;
+                max-height: calc(100% - 120px);
+            }
+
+            .message {
+                max-width: 95%;
+            }
+
+            .message-content {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: var(--rpg-red);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Progress Bar Styles */
+        .progress-container {
+            background: var(--bg-medium);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress {
+            height: 1.5rem;
+            background-color: var(--bg-light);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background-color: var(--rpg-gold);
+            transition: width 0.6s ease;
+        }
+
+        /* AI Assistant Button */
+        .ai-assistant-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--rpg-gold);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 1040;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .ai-assistant-btn:hover {
+            transform: scale(1.1);
+            background-color: var(--rpg-gold-light);
+        }
+
+        .ai-assistant-btn i {
+            font-size: 1.5rem;
+        }
+
+        /* Voice Assistant Modal */
+        .voice-assistant-modal .modal-content {
+            background-color: var(--bg-medium);
+            border: 1px solid var(--rpg-gold);
+        }
+
+        .voice-assistant-modal .modal-header {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .voice-assistant-modal .modal-footer {
+            border-top: 1px solid var(--border-color);
+        }
+
+        .voice-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .voice-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--rpg-gold);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.1);
+            background-color: var(--rpg-gold-light);
+        }
+
+        .voice-btn.recording {
+            animation: pulse 1.5s infinite;
+            background-color: var(--rpg-red);
+        }
+
+        /* Points Display */
+        .points-display {
+            background: linear-gradient(45deg, var(--rpg-gold-dark), var(--rpg-gold));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .points-display i {
+            color: #FFD700;
+        }
+
+        .level-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: linear-gradient(to right, var(--rpg-slate-dark), var(--rpg-slate-light));
+            border: 1px solid var(--rpg-gold);
+            border-radius: 0.5rem;
+            color: var(--rpg-gold);
+            font-weight: 600;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .level-badge i {
+            color: var(--rpg-gold);
+            font-size: 0.9rem;
+        }
+
+        .xp-display {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: linear-gradient(45deg, var(--rpg-gold-dark), var(--rpg-gold));
+            border-radius: 0.5rem;
+            color: var(--bg-dark);
+            font-weight: 600;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .xp-display i {
+            color: var(--bg-dark);
+            font-size: 0.9rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            padding: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            color: var(--rpg-gold);
+        }
+
+        .python-mini-logo {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .python-chat-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .message-avatar img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Level and XP Display Styles */
+        .level-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(218, 165, 32, 0.3);
+        }
+
+        .xp-display:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(218, 165, 32, 0.3);
+        }
+    </style>
+    {% block extrastyle %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg shadow-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'puzzle:index' %}">
+                <span>PyPuzzle</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <!-- Mobile Sidebar Toggle -->
+                    <li class="nav-item d-lg-none">
+                        <button class="nav-link" id="mobileSidebarToggle">
+                            <i class="bi bi-list"></i> Menu
+                        </button>
+                    </li>
+                    
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle me-1"></i>
+                                <span class="me-2">{{ user.username }}</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="level-badge">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span>Lvl {{ user.profile.level|default:"1" }}</span>
+                                    </span>
+                                    <span class="xp-display">
+                                        <i class="bi bi-trophy-fill xp-icon"></i>
+                                        <span>{{ user.profile.xp|default:"0" }}</span>
+                                    </span>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end user-menu">
+                                <li class="user-menu-header">
+                                    <div class="fw-bold" style="color: var(--rpg-gold);">{{ user.username }}</div>
+                                    <div class="d-flex align-items-center justify-content-between mt-1">
+                                        <span class="level-badge">
+                                            <i class="bi bi-star-fill"></i>
+                                            <span>Level {{ user.profile.level|default:"1" }}</span>
+                                        </span>
+                                        <span class="xp-display">
+                                            <i class="bi bi-trophy-fill xp-icon"></i>
+                                            <span>{{ user.profile.xp|default:"0" }} XP</span>
+                                        </span>
+                                    </div>
+                                </li>
+                                <li><a class="dropdown-item user-menu-item" href="{% url 'puzzle:profile' %}">
+                                    <i class="bi bi-person-badge"></i> My Profile
+                                </a></li>
+                                <li><a class="dropdown-item user-menu-item" href="{% url 'puzzle:leaderboard' %}">
+                                    <i class="bi bi-trophy"></i> Leaderboard
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'puzzle:logout' %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item user-menu-item">
+                                            <i class="bi bi-door-closed"></i> Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" 
+                               href="{% url 'puzzle:login' %}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'signup' %}active{% endif %}" 
+                               href="{% url 'puzzle:signup' %}">
+                                <i class="bi bi-person-plus me-1"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="nav-item ms-2">
+                        <a href="https://www.skool.com/coder" target="_blank" class="btn btn-outline-warning btn-sm">
+                            <i class="bi bi-people-fill me-1"></i> Join Community
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item ms-2">
+                        <button class="btn nav-link" id="themeToggle" title="Toggle Theme">
+                            <i class="bi bi-moon-stars-fill"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Left Sidebar - Only show when authenticated -->
+    {% if user.is_authenticated %}
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-toggle-container">
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        
+        <!-- User Info Section -->
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            <div class="user-details">
+                <div class="user-name">{{ user.username }}</div>
+                <div class="d-flex align-items-center mt-1">
+                    <span class="level-badge">
+                        <i class="bi bi-star-fill"></i>
+                        <span>Lvl {{ user.profile.level|default:"1" }}</span>
+                    </span>
+                    <span class="xp-display">
+                        <i class="bi bi-trophy-fill xp-icon"></i>
+                        <span>{{ user.profile.xp|default:"0" }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation Links -->
+        <ul class="sidebar-nav">
+            <li class="sidebar-item">
+                <a href="{% url 'puzzle:index' %}" class="sidebar-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                    <i class="bi bi-house-door-fill sidebar-icon"></i>
+                    <span class="sidebar-text">Home</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-item">
+                <a href="{% url 'puzzle:puzzles' %}" class="sidebar-link {% if request.resolver_match.url_name == 'puzzles' %}active{% endif %}">
+                    <i class="bi bi-puzzle-fill sidebar-icon"></i>
+                    <span class="sidebar-text">Puzzles</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-item">
+                <a href="{% url 'puzzle:profile' %}" class="sidebar-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                    <i class="bi bi-person-circle sidebar-icon"></i>
+                    <span class="sidebar-text">My Profile</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-item">
+                <a href="{% url 'puzzle:leaderboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'leaderboard' %}active{% endif %}">
+                    <i class="bi bi-trophy-fill sidebar-icon"></i>
+                    <span class="sidebar-text">Leaderboard</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-item">
+                <a href="{% url 'puzzle:roadmap' %}" class="sidebar-link {% if request.resolver_match.url_name == 'roadmap' %}active{% endif %}">
+                    <i class="bi bi-map sidebar-icon"></i>
+                    <span class="sidebar-text">Roadmap</span>
+                </a>
+            </li>
+              
+            <li class="sidebar-item">
+                <a href="{% url 'puzzle:ai_assistant' %}" class="sidebar-link {% if request.resolver_match.url_name == 'ai_assistant' %}active{% endif %}">
+                    <i class="bi bi-robot sidebar-icon"></i>
+                    <span class="sidebar-text">AI Assistant</span>
+                </a>
+            </li>
+        </ul>
+        
+        <!-- Community Link -->
+        <a href="https://www.skool.com/coder" target="_blank" class="sidebar-community-link">
+            <i class="bi bi-people-fill"></i>
+            <span class="sidebar-text">Join Community</span>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent" {% if not user.is_authenticated %}style="margin-left: 0 !important;"{% endif %}>
+        <div class="container-fluid">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar Toggle
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            // Theme Toggle
+            const themeToggle = document.getElementById('themeToggle');
+            const icon = themeToggle.querySelector('i');
+            const html = document.documentElement;
+            
+            // Check for saved sidebar state
+            const sidebarState = localStorage.getItem('sidebar-collapsed') === 'true';
+            
+            // Apply saved state
+            if (sidebarState) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+                sidebarToggle.innerHTML = '<i class="bi bi-chevron-right"></i>';
+            }
+            
+            // Desktop sidebar toggle
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                
+                // Update toggle icon
+                if (sidebar.classList.contains('collapsed')) {
+                    sidebarToggle.innerHTML = '<i class="bi bi-chevron-right"></i>';
+                    localStorage.setItem('sidebar-collapsed', 'true');
+                } else {
+                    sidebarToggle.innerHTML = '<i class="bi bi-chevron-left"></i>';
+                    localStorage.setItem('sidebar-collapsed', 'false');
+                }
+            });
+            
+            // Mobile sidebar toggle
+            if (mobileSidebarToggle) {
+                mobileSidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('mobile-open');
+                    sidebarOverlay.classList.toggle('active');
+                    document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+                });
+            }
+            
+            // Close sidebar when clicking overlay
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            
+            // Theme toggle functionality
+            // Apply saved theme
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            if (currentTheme === 'light') {
+                html.classList.remove('dark');
+                document.body.setAttribute('data-bs-theme', 'light');
+            } else {
+                html.classList.add('dark');
+                document.body.setAttribute('data-bs-theme', 'dark');
+            }
+            
+            updateIcon();
+            
+            // Toggle theme on click
+            themeToggle.addEventListener('click', function() {
+                if (html.classList.contains('dark')) {
+                    html.classList.remove('dark');
+                    document.body.setAttribute('data-bs-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    html.classList.add('dark');
+                    document.body.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+                updateIcon();
+            });
+            
+            function updateIcon() {
+                if (html.classList.contains('dark')) {
+                    icon.classList.remove('bi-sun-fill');
+                    icon.classList.add('bi-moon-stars-fill');
+                } else {
+                    icon.classList.remove('bi-moon-stars-fill');
+                    icon.classList.add('bi-sun-fill');
+                }
+            }
+
+            // Virtual Assistant Chat
+            const chatTrigger = document.getElementById('chat-trigger');
+            const chatModal = document.getElementById('chat-modal');
+            const closeChat = document.getElementById('close-chat');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const sendMessage = document.getElementById('send-message');
+            const voiceButton = document.getElementById('voice-button');
+            
+            if (chatTrigger && chatModal) {
+                // Toggle chat visibility
+                chatTrigger.addEventListener('click', () => {
+                    chatModal.classList.toggle('show');
+                });
+                
+                closeChat.addEventListener('click', () => {
+                    chatModal.classList.remove('show');
+                });
+                
+                // Send message
+                function sendChatMessage() {
+                    const message = chatInput.value.trim();
+                    if (!message) return;
+                    
+                    // Add user message to chat
+                    addMessage(message, 'user');
+                    chatInput.value = '';
+                    
+                    // Send message to server
+                    fetch('{% url "puzzle:chat" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ message: message })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            addMessage('Error: ' + data.error, 'error');
+                        } else {
+                            addMessage(data.message, 'assistant');
+                        }
+                    })
+                    .catch(error => {
+                        addMessage('Error: Could not connect to the server', 'error');
+                        console.error('Error:', error);
+                    });
+                }
+                
+                // Add message to chat
+                function addMessage(text, sender) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${sender}`;
+                    
+                    // Add avatar
+                    const avatarDiv = document.createElement('div');
+                    avatarDiv.className = 'message-avatar';
+                    if (sender === 'assistant') {
+                        avatarDiv.innerHTML = `<img src="{% static 'images/python_robot.png' %}" alt="Python Assistant" class="python-mini-logo">`;
+                    } else {
+                        avatarDiv.innerHTML = '<i class="bi bi-person"></i>';
+                    }
+                    messageDiv.appendChild(avatarDiv);
+                    
+                    // Add message content
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'message-content';
+                    contentDiv.textContent = text;
+                    messageDiv.appendChild(contentDiv);
+                    
+                    chatMessages.appendChild(messageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+                
+                // Event listeners
+                if (sendMessage) {
+                    sendMessage.addEventListener('click', sendChatMessage);
+                }
+                if (chatInput) {
+                    chatInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            sendChatMessage();
+                        }
+                    });
+                }
+                
+                // Voice recognition
+                let recognition = null;
+                if ('webkitSpeechRecognition' in window) {
+                    recognition = new webkitSpeechRecognition();
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+                    
+                    if (voiceButton) {
+                        voiceButton.addEventListener('click', () => {
+                            recognition.start();
+                            voiceButton.classList.add('recording');
+                        });
+                        
+                        recognition.onresult = (event) => {
+                            const transcript = event.results[0][0].transcript;
+                            chatInput.value = transcript;
+                            voiceButton.classList.remove('recording');
+                        };
+                        
+                        recognition.onerror = (event) => {
+                            console.error('Speech recognition error:', event.error);
+                            voiceButton.classList.remove('recording');
+                        };
+                    }
+                } else if (voiceButton) {
+                    voiceButton.style.display = 'none';
+                }
+            }
+            
+            // Get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
+    {% block extra_scripts %}{% endblock %}
+
+    <!-- Virtual Assistant -->
+    <div class="virtual-assistant">
+        <div class="chat-box" id="chat-modal">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <img src="{% static 'images/assistant.jpg' %}" alt="Python Assistant" class="python-mini-logo">
+                    <span>AI Assistant</span>
+                </div>
+                <button class="chat-close" id="close-chat">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="message assistant">
+                    <div class="message-avatar">
+                        <img src="{% static 'images/assistant.jpg' %}" alt="Python Assistant">
+                    </div>
+                    <div class="message-content">
+                        <p>👋 Welcome! Let me tell you about PyPuzzle - your interactive Python learning platform!</p>
+                        
+                        <p><strong>What is PyPuzzle?</strong></p>
+                        <p>PyPuzzle is an educational web platform designed to help you master Python programming through interactive challenges, puzzles, and a gamified learning experience. Here's what makes it special:</p>
+
+                        <ul>
+                            <li>🎯 <strong>Interactive Learning:</strong> Solve real Python coding challenges and MCQ questions that test your knowledge</li>
+                            <li>🎮 <strong>Gamified Experience:</strong> Earn XP points, level up, and track your progress on the leaderboard</li>
+                            <li>🗺️ <strong>Structured Roadmap:</strong> Follow a carefully designed learning path from basics to advanced Python concepts</li>
+                            <li>🤖 <strong>AI Support:</strong> Get help from me, your AI assistant, for hints, explanations, and debugging</li>
+                            <li>👥 <strong>Community:</strong> Join other learners in our coding community and share your progress</li>
+                        </ul>
+
+                        <p><strong>Key Features:</strong></p>
+                        <ul>
+                            <li>✨ Progressive difficulty levels</li>
+                            <li>📝 Multiple choice and coding challenges</li>
+                            <li>🏆 Achievement system and badges</li>
+                            <li>📊 Progress tracking and analytics</li>
+                            <li>💡 Instant feedback on your solutions</li>
+                        </ul>
+
+                        <p>How can I help you get started with your Python learning journey? Feel free to ask about:</p>
+                        <ul>
+                            <li>🔍 Specific puzzle explanations</li>
+                            <li>📚 Python concepts and tutorials</li>
+                            <li>🎯 Challenge recommendations</li>
+                            <li>📈 Your progress and achievements</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chat-input" placeholder="Type your message..." aria-label="Type your message">
+                <div class="chat-actions">
+                    <button id="voice-button" class="voice-btn" title="Voice Input">
+                        <i class="bi bi-mic-fill"></i>
+                    </button>
+                    <button id="send-message">
+                        <i class="bi bi-send-fill"></i>
+                        <span>Send</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="chat-trigger" id="chat-trigger">
+            <img src="{% static 'images/assistant.jpg' %}" alt="Python Assistant" class="python-chat-logo">
+        </div>
+    </div>
+</body>
+</html>

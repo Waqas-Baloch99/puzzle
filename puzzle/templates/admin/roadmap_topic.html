@@ -1,0 +1,21 @@
+{% load i18n %}
+
+<li class="roadmap-topic {% if not topic.children.all %}quest{% endif %}">
+    <span class="toggle">{% if topic.children.all %}▶{% else %}•{% endif %}</span>
+    <span class="topic-title">{{ topic.title }}</span>
+
+    <!-- Action buttons for Edit and Delete -->
+    <div class="actions">
+        <a href="{% url 'custom_admin:puzzle_roadmaptopic_change' topic.id %}" class="edit">{% trans "Edit" %}</a>
+        <a href="{% url 'custom_admin:puzzle_roadmaptopic_delete' topic.id %}" class="delete">{% trans "Delete" %}</a>
+    </div>
+
+    <!-- Render children recursively -->
+    {% if topic.children.all %}
+        <ul class="children">
+            {% for child in topic.children.all %}
+                {% include "admin/roadmap_topic.html" with topic=child %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

@@ -1,0 +1,256 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Manage Submissions | {{ site_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h3 mb-0" style="color: var(--primary);">
+            <i class="bi bi-file-earmark-check me-2"></i>Submission Management
+        </h2>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-neon" data-bs-toggle="collapse" data-bs-target="#filterSection">
+                <i class="bi bi-funnel me-1"></i>Filters
+            </button>
+            <button class="btn btn-outline-neon" onclick="exportSubmissions()">
+                <i class="bi bi-download me-1"></i>Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="collapse mb-4" id="filterSection">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="correct" {% if request.GET.status == 'correct' %}selected{% endif %}>Correct</option>
+                            <option value="incorrect" {% if request.GET.status == 'incorrect' %}selected{% endif %}>Incorrect</option>
+                            <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Date Range</label>
+                        <select name="date_range" class="form-select">
+                            <option value="">All Time</option>
+                            <option value="today" {% if request.GET.date_range == 'today' %}selected{% endif %}>Today</option>
+                            <option value="week" {% if request.GET.date_range == 'week' %}selected{% endif %}>This Week</option>
+                            <option value="month" {% if request.GET.date_range == 'month' %}selected{% endif %}>This Month</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Search</label>
+                        <input type="text" name="search" class="form-control" placeholder="Search by user or puzzle..." 
+                               value="{{ request.GET.search }}">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-outline-neon w-100">
+                            <i class="bi bi-search me-1"></i>Apply Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Submissions</h6>
+                    <h3 class="card-title mb-0" style="color: var(--primary);">{{ total_submissions }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Correct Submissions</h6>
+                    <h3 class="card-title mb-0" style="color: var(--accent);">{{ correct_submissions }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Today's Submissions</h6>
+                    <h3 class="card-title mb-0" style="color: var(--secondary-light);">{{ today_submissions }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Average Time</h6>
+                    <h3 class="card-title mb-0" style="color: var(--primary-light);">{{ avg_time }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submissions Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Puzzle</th>
+                            <th>Status</th>
+                            <th>Time Taken</th>
+                            <th>Submitted At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in submissions %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-circle me-2"></i>
+                                    {{ submission.user.username }}
+                                </div>
+                            </td>
+                            <td>{{ submission.puzzle.title }}</td>
+                            <td>
+                                <span class="badge {% if submission.status == 'correct' %}bg-success{% elif submission.status == 'incorrect' %}bg-danger{% else %}bg-warning{% endif %}">
+                                    {{ submission.status|title }}
+                                </span>
+                            </td>
+                            <td>{{ submission.time_taken }}</td>
+                            <td>{{ submission.submitted_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-neon" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#submissionModal{{ submission.id }}">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <a href="{% url 'custom_admin:manage-submissions' %}?id={{ submission.id }}" 
+                                       class="btn btn-sm btn-outline-neon">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Submission Detail Modal -->
+                        <div class="modal fade" id="submissionModal{{ submission.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Submission Details</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <h6>User Information</h6>
+                                            <p class="mb-1">Username: {{ submission.user.username }}</p>
+                                            <p class="mb-1">Email: {{ submission.user.email }}</p>
+                                            <p>Joined: {{ submission.user.date_joined|date:"M d, Y" }}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h6>Puzzle Information</h6>
+                                            <p class="mb-1">Title: {{ submission.puzzle.title }}</p>
+                                            <p class="mb-1">Difficulty: {{ submission.puzzle.difficulty }}</p>
+                                            <p>XP Reward: {{ submission.puzzle.xp_reward }}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h6>Submission Details</h6>
+                                            <p class="mb-1">Status: {{ submission.status|title }}</p>
+                                            <p class="mb-1">Time Taken: {{ submission.time_taken }}</p>
+                                            <p>Submitted: {{ submission.submitted_at|date:"M d, Y H:i:s" }}</p>
+                                        </div>
+                                        <div>
+                                            <h6>Solution</h6>
+                                            <pre class="bg-dark p-3 rounded"><code>{{ submission.solution }}</code></pre>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-outline-neon" data-bs-dismiss="modal">Close</button>
+                                        <a href="{% url 'custom_admin:manage-submissions' %}?id={{ submission.id }}" 
+                                           class="btn btn-outline-neon">
+                                            Edit Submission
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                                No submissions found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if submissions.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if submissions.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ submissions.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_range %}&date_range={{ request.GET.date_range }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in submissions.paginator.page_range %}
+                    {% if submissions.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > submissions.number|add:'-3' and num < submissions.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_range %}&date_range={{ request.GET.date_range }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if submissions.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ submissions.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_range %}&date_range={{ request.GET.date_range }}{% endif %}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function exportSubmissions() {
+    // Get current filters
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status') || '';
+    const dateRange = urlParams.get('date_range') || '';
+    const search = urlParams.get('search') || '';
+
+    // Construct export URL with filters
+    const exportUrl = `{% url 'custom_admin:export-submissions' %}?status=${status}&date_range=${dateRange}&search=${search}`;
+    
+    // Trigger download
+    window.location.href = exportUrl;
+}
+</script>
+{% endblock %} 

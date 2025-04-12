@@ -1,0 +1,139 @@
+{% extends "admin/base_admin.html" %}
+
+{% block extrastyle %}
+    <style>
+        /* Roadmap container */
+        .roadmap-container {
+            margin: 20px 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Roadmap list styling */
+        .roadmap-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Individual topic item */
+        .roadmap-topic {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        /* Nested topics */
+        .roadmap-topic ul {
+            list-style: none;
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+
+        /* Topic title */
+        .topic-title {
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        /* Quest topics (leaf nodes) */
+        .roadmap-topic.quest {
+            border-left-color: #28a745;
+            background-color: #e6f4ea;
+        }
+
+        /* Collapsible toggle */
+        .toggle {
+            margin-right: 10px;
+            font-size: 14px;
+            color: #007bff;
+            cursor: pointer;
+        }
+
+        /* Hidden by default */
+        .children {
+            display: none;
+        }
+
+        /* Show children when toggled */
+        .children.active {
+            display: block;
+        }
+
+        /* Action buttons (Edit/Delete) */
+        .actions {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+        }
+
+        .actions a {
+            margin-left: 10px;
+            text-decoration: none;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+
+        .actions .edit {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .actions .delete {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Button to add new topic */
+        .add-topic-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .add-topic-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Admin Roadmap</h1>
+    <p>Here is the roadmap for the admin section of the site. Use this to manage the learning path for Python.</p>
+
+    <!-- Button to Add a New Roadmap Topic -->
+    <a href="{% url 'custom_admin:puzzle_roadmaptopic_add' %}" class="add-topic-btn">Create Roadmap Topic</a>
+
+    <div class="roadmap-container">
+        <ul class="roadmap-list">
+            {% for topic in roadmap_topics %}
+                {% include "admin/roadmap_topic.html" with topic=topic %}
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
+
+{% block extrajs %}
+    <script>
+        // Toggle visibility of children
+        document.querySelectorAll('.toggle').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const children = this.parentElement.querySelector('.children');
+                if (children) {
+                    children.classList.toggle('active');
+                    this.textContent = children.classList.contains('active') ? '▼' : '▶';
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends 'puzzle/base.html' %}
+
+{% block title %}Leaderboard{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .leaderboard-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .leaderboard-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .leaderboard-title {
+        color: var(--rpg-gold);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .leaderboard-subtitle {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+    }
+
+    .leaderboard-table {
+        background: var(--bg-medium);
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background: var(--bg-dark);
+        color: var(--rpg-gold);
+        border-bottom: 2px solid var(--border-color);
+        padding: 1rem;
+        font-weight: 600;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        color: var(--text-light);
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .rank {
+        font-weight: bold;
+        color: var(--rpg-gold);
+        width: 50px;
+    }
+
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--rpg-gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+    }
+
+    .user-name {
+        font-weight: 600;
+    }
+
+    .xp-cell {
+        font-weight: 600;
+        color: var(--rpg-gold);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .xp-cell i {
+        color: var(--rpg-gold);
+    }
+
+    .your-rank {
+        background: var(--bg-medium);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 2rem;
+        text-align: center;
+        color: var(--text-light);
+    }
+
+    .your-rank strong {
+        color: var(--rpg-gold);
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="leaderboard-container">
+    <div class="leaderboard-header">
+        <h1 class="leaderboard-title">Leaderboard</h1>
+        <p class="leaderboard-subtitle">Top players ranked by XP</p>
+    </div>
+
+    <div class="leaderboard-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>User</th>
+                    <th>XP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profile in top_users %}
+                    <tr>
+                        <td class="rank">#{{ forloop.counter }}</td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">
+                                    {{ profile.user.username|make_list|first|upper }}
+                                </div>
+                                <span class="user-name">{{ profile.user.username }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="xp-cell">
+                                <i class="bi bi-star-fill"></i>
+                                {{ profile.xp }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="your-rank">
+        Your current rank: <strong>#{{ user_rank }}</strong>
+    </div>
+</div>
+{% endblock %}

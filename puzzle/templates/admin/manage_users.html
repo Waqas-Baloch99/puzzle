@@ -1,0 +1,238 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
+<style>
+    .user-management {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .user-content {
+        background: var(--ai-dark);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px var(--ai-shadow);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+    }
+
+    .user-table {
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .user-table th {
+        background: var(--ai-dark);
+        color: var(--ai-primary);
+        font-weight: 500;
+        border-bottom: 2px solid var(--ai-neon);
+    }
+
+    .user-table td {
+        color: var(--ai-secondary);
+        transition: background 0.2s ease;
+    }
+
+    .user-table tr:hover {
+        background: rgba(0, 212, 255, 0.1);
+    }
+
+    .pagination {
+        margin-top: 20px;
+    }
+
+    .pagination .page-link {
+        background: var(--ai-dark);
+        color: var(--ai-primary);
+        border-color: rgba(0, 212, 255, 0.2);
+        transition: all 0.2s ease;
+    }
+
+    .pagination .page-link:hover {
+        background: rgba(0, 212, 255, 0.1);
+        color: var(--ai-neon);
+        border-color: var(--ai-neon);
+    }
+
+    .pagination .disabled .page-link {
+        background: var(--ai-dark);
+        color: var(--ai-secondary);
+        opacity: 0.6;
+    }
+
+    .btn-primary {
+        background: var(--ai-primary);
+        border-color: var(--ai-primary);
+        color: var(--ai-black);
+    }
+
+    .btn-primary:hover {
+        background: var(--ai-neon);
+        border-color: var(--ai-neon);
+    }
+
+    .btn-secondary {
+        background: transparent;
+        border-color: var(--ai-secondary);
+        color: var(--ai-secondary);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(176, 176, 176, 0.1);
+        color: var(--ai-secondary);
+    }
+
+    .btn-warning {
+        background: transparent;
+        border-color: var(--bs-warning);
+        color: var(--bs-warning);
+    }
+
+    .btn-warning:hover {
+        background: rgba(255, 193, 7, 0.1);
+        color: var(--bs-warning);
+    }
+
+    .btn-danger {
+        background: transparent;
+        border-color: var(--ai-danger);
+        color: var(--ai-danger);
+    }
+
+    .btn-danger:hover {
+        background: rgba(255, 51, 102, 0.1);
+        color: var(--ai-danger);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--ai-secondary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="user-management">
+    <div class="user-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0 text-light animate-glow">
+                <i class="bi bi-people me-2"></i>User Management
+            </h1>
+            <div class="d-flex gap-2">
+                <a href="{% url 'custom_admin:custom-dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
+                <a href="{% url 'custom_admin:puzzle_profile_add' %}" class="btn btn-primary">Add New User</a>
+            </div>
+        </div>
+
+        <div class="table-responsive user-table">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>XP</th>
+                        <th>Level</th>
+                        <th>Solved Puzzles</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in user_profiles %}
+                    <tr>
+                        <td>{{ profile.user.username }}</td>
+                        <td>{{ profile.user.email }}</td>
+                        <td>{{ profile.xp }}</td>
+                        <td>{{ profile.level }}</td>
+                        <td>{{ profile.puzzles_solved }}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'custom_admin:puzzle_profile_change' profile.id %}" 
+                                   class="btn btn-warning btn-sm"
+                                   data-bs-toggle="tooltip" 
+                                   title="Edit User">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'custom_admin:puzzle_profile_delete' profile.id %}" 
+                                   class="btn btn-danger btn-sm"
+                                   data-bs-toggle="tooltip" 
+                                   title="Delete User">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <i class="bi bi-people display-5 text-muted mb-3 animate-glow"></i>
+                            <h3 class="h5 text-light">No Users Found</h3>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj %}
+        <div class="pagination">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">« First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last »</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script>
+    // Initialize Bootstrap tooltips
+    document.addEventListener('DOMContentLoaded', () => {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltipTriggerList].forEach(tooltipTriggerEl => {
+            new bootstrap.Tooltip(tooltipTriggerEl, {
+                customClass: 'tooltip-ai'
+            });
+        });
+    });
+</script>
+<style>
+    /* Custom tooltip styling for AI theme */
+    .tooltip-ai .tooltip-inner {
+        background: var(--ai-dark);
+        color: var(--ai-primary);
+        border: 1px solid var(--ai-neon);
+    }
+    .tooltip-ai .tooltip-arrow::before {
+        border-color: var(--ai-neon);
+    }
+</style>
+{% endblock %}

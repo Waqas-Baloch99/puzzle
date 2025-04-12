@@ -1,0 +1,217 @@
+{% extends 'puzzle/base.html' %}
+{% load static %}
+
+{% block title %}Puzzles{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .puzzles-container {
+        padding: 2rem;
+    }
+
+    .topics-nav {
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+    }
+
+    .topic-link {
+        padding: 0.75rem 1.5rem;
+        background: var(--bg-medium);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-light);
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+    }
+
+    .topic-link:hover {
+        background: var(--bg-dark);
+        border-color: var(--rpg-gold);
+        color: var(--rpg-gold);
+    }
+
+    .topic-link.active {
+        background: var(--rpg-gold);
+        border-color: var(--rpg-gold);
+        color: black;
+    }
+
+    .puzzle-card {
+        background: var(--bg-medium);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .puzzle-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .puzzle-card.solved {
+        border-color: var(--rpg-gold);
+    }
+
+    .puzzle-card.solved::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        border-style: solid;
+        border-width: 0 40px 40px 0;
+        border-color: transparent var(--rpg-gold) transparent transparent;
+    }
+
+    .puzzle-card.solved::after {
+        content: '✓';
+        position: absolute;
+        top: 4px;
+        right: 8px;
+        color: black;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-title {
+        color: var(--rpg-gold);
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .card-text {
+        color: var(--text-light);
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .badge-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .badge-difficulty {
+        background: rgba(218, 165, 32, 0.2);
+        color: var(--rpg-gold);
+    }
+
+    .badge-xp {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+
+    .badge-type {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+    }
+
+    .btn-start {
+        background: var(--rpg-gold);
+        color: black;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-start:hover {
+        background: var(--rpg-gold-dark);
+        transform: translateY(-2px);
+    }
+
+    .btn-start i {
+        font-size: 1.1rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--rpg-gold);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        color: var(--text-light);
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="puzzles-container">
+    <!-- Topics Navigation -->
+    <div class="topics-nav">
+        <a href="{% url 'puzzle:puzzles' %}" class="topic-link {% if not selected_topic %}active{% endif %}">
+            All Topics
+        </a>
+        {% for topic in topics %}
+        <a href="{% url 'puzzle:puzzles' %}?topic={{ topic.id }}" 
+           class="topic-link {% if selected_topic == topic.id %}active{% endif %}">
+            {{ topic.title }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Puzzles Grid -->
+    <div class="row g-4">
+        {% for puzzle in puzzles %}
+        <div class="col-md-6 col-lg-4">
+            <div class="puzzle-card {% if puzzle.is_solved %}solved{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ puzzle.title }}</h5>
+                    <p class="card-text">{{ puzzle.description|truncatewords:30 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="badge-group">
+                            <span class="badge badge-difficulty">{{ puzzle.get_difficulty_display }}</span>
+                            <span class="badge badge-xp">{{ puzzle.xp_reward }} XP</span>
+                            <span class="badge badge-type">{{ puzzle.puzzle_type }}</span>
+                        </div>
+                        <a href="{% url 'puzzle:solve' puzzle.id %}" class="btn-start">
+                            {% if puzzle.is_solved %}
+                            <i class="bi bi-check-circle"></i>Solved
+                            {% else %}
+                            <i class="bi bi-play-circle"></i>Start
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="empty-state">
+                <i class="bi bi-puzzle"></i>
+                <h3>No puzzles found</h3>
+                <p>There are no puzzles available in this topic yet. Check back later!</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

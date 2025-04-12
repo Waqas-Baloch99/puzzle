@@ -1,0 +1,491 @@
+{% extends "puzzle/base.html" %}
+{% load static %}
+
+{% block title %}Python Puzzle - Learn Python Through Challenges{% endblock %}
+
+{% block extrastyle %}
+<style>
+    /* Container spacing */
+    .puzzle-container {
+        padding: 1.5rem 0;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    /* Page title */
+    .page-title {
+        color: var(--rpg-gold);
+        font-size: 2rem;
+        margin-bottom: 2rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+    }
+    
+    .page-title i {
+        margin-right: 0.75rem;
+    }
+
+    /* Next puzzle card */
+    .puzzle-card {
+        background-color: var(--bg-medium);
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .puzzle-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(218, 165, 32, 0.3);
+    }
+    
+    .card-body {
+        padding: 2rem;
+    }
+    
+    .card-title {
+        color: var(--rpg-gold);
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    .card-description {
+        color: var(--text-light);
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .badge-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+    
+    .badge-type-mcq {
+        background-color: #2e7d32;
+        color: white;
+    }
+    
+    .badge-type-code {
+        background-color: #ffca28;
+        color: #000;
+    }
+    
+    .badge-level {
+        background-color: var(--rpg-gold);
+        color: #000;
+    }
+    
+    .badge-points {
+        background-color: var(--rpg-gold-dark);
+        color: white;
+    }
+    
+    .next-button {
+        background-color: var(--rpg-gold);
+        color: #000;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        border: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .next-button:hover {
+        background-color: var(--rpg-gold-light);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .next-button i {
+        font-size: 1.2rem;
+    }
+
+    /* Progress bars */
+    .progress-container {
+        background: var(--bg-medium);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+    }
+    
+    .progress {
+        height: 1.5rem;
+        background-color: var(--bg-light);
+        border-radius: 1rem;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+    
+    .progress-bar {
+        background-color: var(--rpg-gold);
+        transition: width 0.6s ease;
+    }
+    
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    .timeline {
+        position: relative;
+        padding: 0;
+        list-style: none;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 24px;
+        margin-bottom: 24px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    .timeline-content {
+        padding-left: 12px;
+    }
+
+    .progress-circle {
+        position: relative;
+    }
+
+    .circular-chart {
+        display: block;
+        margin: 10px auto;
+        max-width: 100%;
+        max-height: 250px;
+    }
+
+    .progress-circle text {
+        fill: #fff;
+        font-size: 0.5em;
+        text-anchor: middle;
+    }
+
+    /* Activity Graph */
+    .activity-graph {
+        padding: 2rem;
+        margin-top: 2rem;
+        background: var(--bg-medium);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+    }
+
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        color: var(--text-light);
+    }
+
+    .contribution-count {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        margin-bottom: 1rem;
+    }
+
+    .contribution-settings {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        text-decoration: none;
+        padding: 4px 8px;
+        border-radius: 6px;
+    }
+
+    .contribution-settings:hover {
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+        text-decoration: none;
+    }
+
+    .activity-calendar {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .calendar-header {
+        display: grid;
+        grid-template-columns: 2rem repeat(12, 1fr);
+        padding-bottom: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-light);
+    }
+
+    .calendar-grid {
+        display: flex;
+    }
+
+    .weekday-labels {
+        display: grid;
+        grid-template-rows: repeat(7, 1fr);
+        gap: 3px;
+        margin-right: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-light);
+    }
+
+    .weekday-label {
+        height: 11px;
+        line-height: 11px;
+    }
+
+    .squares-grid {
+        display: grid;
+        grid-template-columns: repeat(53, 1fr);
+        gap: 3px;
+    }
+
+    .squares-column {
+        display: grid;
+        grid-template-rows: repeat(7, 1fr);
+        gap: 3px;
+    }
+
+    .square {
+        width: 11px;
+        height: 11px;
+        background-color: var(--bg-dark);
+        border-radius: 2px;
+        transition: transform 0.1s ease;
+        position: relative;
+    }
+
+    .square:hover {
+        transform: scale(1.1);
+    }
+
+    .square[data-level="0"] { background-color: var(--bg-dark); }
+    .square[data-level="1"] { background-color: #0e4429; }
+    .square[data-level="2"] { background-color: #006d32; }
+    .square[data-level="3"] { background-color: #26a641; }
+    .square[data-level="4"] { background-color: #39d353; }
+
+    .square[data-tooltip]:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 140%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.5rem;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        z-index: 1000;
+    }
+
+    .activity-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        color: var(--text-light);
+    }
+
+    .learn-how {
+        color: var(--text-light);
+        text-decoration: none;
+    }
+
+    .learn-how:hover {
+        color: var(--rpg-gold);
+        text-decoration: none;
+    }
+
+    .contribution-scale {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .scale-squares {
+        display: flex;
+        gap: 3px;
+        align-items: center;
+    }
+
+    .scale-squares .square {
+        width: 11px;
+        height: 11px;
+    }
+
+    .start-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background-color: var(--rpg-gold);
+        color: #000;
+        font-weight: 600;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        border: none;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        margin-top: 1rem;
+    }
+
+    .start-button:hover {
+        background-color: var(--rpg-gold-light);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        color: #000;
+        text-decoration: none;
+    }
+
+    .start-button i {
+        font-size: 1.2rem;
+    }
+
+    .welcome-section {
+        background: var(--bg-medium);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .welcome-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .stats {
+        display: flex;
+        gap: 2rem;
+        margin: 1.5rem 0;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--rpg-gold);
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-light);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="puzzle-container">
+    <div class="welcome-section">
+        <div class="welcome-content">
+            <h1 class="page-title mb-4">
+                <i class="bi bi-house-door"></i>
+                Welcome, {{ user_profile.user.username }}!
+            </h1>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ solved_puzzles }}</div>
+                    <div class="stat-label">Puzzles Solved</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_puzzles }}</div>
+                    <div class="stat-label">Total Puzzles</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ progress_percentage|floatformat:0 }}%</div>
+                    <div class="stat-label">Progress</div>
+                </div>
+            </div>
+
+            {% if next_puzzle %}
+            <a href="{% url 'puzzle:solve' next_puzzle.id %}" class="start-button">
+                <i class="bi bi-play-circle"></i>
+                Start Next Puzzle
+            </a>
+            {% endif %}
+
+            <!-- Activity Graph -->
+            <div class="activity-graph">
+                <div class="activity-header">
+                    <div class="contribution-count">{{ total_submissions }} contributions in the last year</div>
+                    <a href="#" class="contribution-settings">
+                        Contribution settings
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+                </div>
+                <div class="activity-calendar">
+                    <div class="calendar-header">
+                        <div></div>
+                        {% for month in months %}
+                            <div>{{ month }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="weekday-labels">
+                            <div class="weekday-label">Mon</div>
+                            <div class="weekday-label">Wed</div>
+                            <div class="weekday-label">Fri</div>
+                        </div>
+                        <div class="squares-grid">
+                            {% for week in activity_weeks %}
+                            <div class="squares-column">
+                                {% for day in week %}
+                                <div class="square" 
+                                     data-level="{{ day.level }}" 
+                                     data-tooltip="{{ day.count }} submissions on {{ day.date }}">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="activity-footer">
+                    <a href="#" class="learn-how">Learn how we count contributions</a>
+                    <div class="contribution-scale">
+                        <span>Less</span>
+                        <div class="scale-squares">
+                            <div class="square" data-level="0"></div>
+                            <div class="square" data-level="1"></div>
+                            <div class="square" data-level="2"></div>
+                            <div class="square" data-level="3"></div>
+                            <div class="square" data-level="4"></div>
+                        </div>
+                        <span>More</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

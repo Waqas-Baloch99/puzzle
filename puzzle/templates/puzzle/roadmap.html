@@ -1,0 +1,402 @@
+<!-- roadmap.html template -->
+{% extends "puzzle/base.html" %}
+
+{% block title %}Python Learning Roadmap{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .roadmap-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .roadmap-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .roadmap-title {
+        color: var(--rpg-gold);
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .roadmap-description {
+        color: var(--text-light);
+        font-size: 1.1rem;
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .roadmap-network {
+        background: var(--bg-medium);
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        min-height: 800px;
+    }
+
+    .roadmap-legend {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: var(--bg-dark);
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+
+    .legend-completed {
+        background-color: #2ecc71;
+    }
+
+    .legend-incomplete {
+        background-color: #cccccc;
+    }
+
+    .legend-current {
+        background-color: var(--rpg-gold);
+    }
+
+    .topic-info {
+        position: fixed;
+        right: 2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 300px;
+        background: var(--bg-dark);
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        display: none;
+    }
+
+    .topic-info.active {
+        display: block;
+    }
+
+    .topic-info-header {
+        color: var(--rpg-gold);
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .topic-info-content {
+        color: var(--text-light);
+    }
+
+    .topic-progress {
+        margin: 1rem 0;
+    }
+
+    .progress-bar-container {
+        height: 8px;
+        background: var(--bg-medium);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: var(--rpg-gold);
+        transition: width 0.3s ease;
+    }
+
+    .topic-stats {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .topic-puzzles {
+        margin-top: 1rem;
+    }
+
+    .puzzle-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .puzzle-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    .puzzle-item i {
+        color: #2ecc71;
+    }
+
+    .puzzle-item.incomplete i {
+        color: #cccccc;
+    }
+
+    .start-topic-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--rpg-gold);
+        color: #000;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .start-topic-btn:hover {
+        background: var(--rpg-gold-light);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3);
+        color: #000;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="roadmap-container">
+    <div class="roadmap-header">
+        <h1 class="roadmap-title">Python Learning Roadmap</h1>
+        <p class="roadmap-description">
+            Follow your personalized learning path through Python programming concepts. 
+            Each topic builds upon the previous ones, helping you progress from basics to advanced concepts.
+        </p>
+    </div>
+
+    <div class="roadmap-legend">
+        <div class="legend-item">
+            <div class="legend-color legend-completed"></div>
+            <span>Completed</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color legend-incomplete"></div>
+            <span>Not Started</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color legend-current"></div>
+            <span>Current Topic</span>
+        </div>
+    </div>
+
+    <div class="roadmap-network" id="roadmap-network"></div>
+
+    <div class="topic-info" id="topic-info">
+        <div class="topic-info-header">
+            <span id="topic-title"></span>
+        </div>
+        <div class="topic-info-content">
+            <div class="topic-progress">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="topic-progress-bar"></div>
+                </div>
+                <div class="topic-stats">
+                    <span id="puzzles-completed"></span>
+                    <span id="total-puzzles"></span>
+                </div>
+            </div>
+            <div class="topic-puzzles">
+                <ul class="puzzle-list" id="puzzle-list"></ul>
+            </div>
+            <a href="#" class="start-topic-btn" id="start-topic-btn">
+                <i class="bi bi-play-circle"></i>
+                Start Topic
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/vis-network.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('roadmap-network');
+    const roadmapData = {{ roadmap_data|safe }};
+    
+    // Transform the data to match the desired format
+    const data = {
+        nodes: roadmapData.nodes.map(node => ({
+            ...node,
+            shape: 'circle',
+            size: 40,
+            font: {
+                size: 14,
+                face: 'system-ui',
+                multi: true,
+                align: 'center'
+            },
+            color: {
+                background: node.completed ? '#2ecc71' : '#cccccc',
+                border: node.completed ? '#27ae60' : '#bbbbbb',
+                highlight: {
+                    background: node.completed ? '#2ecc71' : '#dddddd',
+                    border: node.completed ? '#27ae60' : '#cccccc'
+                }
+            },
+            label: node.label.split(' ').join('\n'),
+            borderWidth: 2,
+            shadow: {
+                enabled: true,
+                color: 'rgba(0,0,0,0.2)',
+                size: 3,
+                x: 1,
+                y: 1
+            }
+        })),
+        edges: roadmapData.edges.map(edge => ({
+            ...edge,
+            arrows: {
+                to: {
+                    enabled: true,
+                    scaleFactor: 0.5
+                }
+            },
+            color: {
+                color: '#999999',
+                opacity: 0.6
+            },
+            width: 1,
+            smooth: {
+                type: 'curvedCW',
+                roundness: 0.2
+            }
+        }))
+    };
+
+    const options = {
+        nodes: {
+            shape: 'circle',
+            margin: 10,
+            fixed: {
+                x: false,
+                y: false
+            }
+        },
+        edges: {
+            width: 1,
+            selectionWidth: 0,
+            smooth: {
+                type: 'curvedCW',
+                roundness: 0.2
+            }
+        },
+        layout: {
+            hierarchical: {
+                direction: 'UD',
+                sortMethod: 'directed',
+                levelSeparation: 100,
+                nodeSpacing: 150,
+                treeSpacing: 200,
+                blockShifting: true,
+                edgeMinimization: true,
+                parentCentralization: true
+            }
+        },
+        interaction: {
+            dragNodes: false,
+            dragView: true,
+            zoomView: true,
+            hover: true
+        },
+        physics: {
+            enabled: false
+        }
+    };
+
+    // Create network
+    const network = new vis.Network(container, data, options);
+
+    // Handle node click
+    network.on('click', function(params) {
+        if (params.nodes.length > 0) {
+            const nodeId = params.nodes[0];
+            const node = data.nodes.find(n => n.id === nodeId);
+            if (node) {
+                updateTopicInfo(node);
+            }
+        }
+    });
+
+    // Handle node hover
+    network.on('hoverNode', function(params) {
+        container.style.cursor = 'pointer';
+    });
+
+    network.on('blurNode', function(params) {
+        container.style.cursor = 'default';
+    });
+
+    function updateTopicInfo(node) {
+        const topicInfo = document.getElementById('topic-info');
+        const title = document.getElementById('topic-title');
+        const progressBar = document.getElementById('topic-progress-bar');
+        const puzzlesCompleted = document.getElementById('puzzles-completed');
+        const totalPuzzles = document.getElementById('total-puzzles');
+        const startTopicBtn = document.getElementById('start-topic-btn');
+
+        // Update topic info
+        title.textContent = node.label.replace('\n', ' ');
+        
+        // Calculate progress
+        const completed = node.puzzle_ids ? node.puzzle_ids.filter(id => 
+            roadmapData.completed_puzzles && roadmapData.completed_puzzles.includes(id)).length : 0;
+        const total = node.puzzle_ids ? node.puzzle_ids.length : 0;
+        const progress = total > 0 ? (completed / total * 100) : 0;
+
+        // Update progress bar
+        progressBar.style.width = `${progress}%`;
+        puzzlesCompleted.textContent = `${completed} completed`;
+        totalPuzzles.textContent = `${total} total`;
+
+        // Update start button
+        startTopicBtn.href = `/puzzles/?topic=${node.id}`;
+
+        // Show topic info
+        topicInfo.classList.add('active');
+    }
+
+    // Initial network fit
+    network.once('afterDrawing', function() {
+        network.fit({
+            animation: {
+                duration: 1000,
+                easingFunction: 'easeInOutQuad'
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

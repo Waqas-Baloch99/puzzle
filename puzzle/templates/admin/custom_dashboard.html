@@ -1,0 +1,230 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .dashboard-section {
+        background: var(--ai-dark);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px var(--ai-shadow);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+        transition: transform 0.2s ease;
+    }
+
+    .dashboard-section:hover {
+        transform: translateY(-3px);
+    }
+
+    .stat-card {
+        border: 1px solid rgba(0, 212, 255, 0.2);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: linear-gradient(135deg, var(--ai-dark), #252525);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px var(--ai-shadow);
+        border-color: var(--ai-neon);
+    }
+
+    .category-card {
+        border-left: 4px solid;
+        position: relative;
+        overflow: hidden;
+        background: var(--ai-dark);
+        transition: all 0.3s ease;
+    }
+
+    .category-card:hover {
+        box-shadow: 0 0 15px var(--ai-shadow);
+    }
+
+    .category-card::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(0, 212, 255, 0.1));
+        transform: rotate(15deg);
+    }
+
+    .table-dark {
+        --bs-table-bg: var(--ai-dark);
+        --bs-table-hover-bg: rgba(0, 212, 255, 0.1);
+        color: var(--ai-secondary);
+    }
+
+    .badge {
+        padding: 0.5em 1em;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="h2 mb-0 text-light animate-glow">Dashboard Overview</h1>
+            <p class="text-muted mb-0">Welcome back, {{ user.username }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-neon btn-sm">
+                <i class="bi bi-plus-lg me-2"></i>New Puzzle
+            </button>
+            <button class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-filter me-2"></i>Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="row g-4 mb-5">
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="stat-card text-white p-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-people fs-2 me-3 text-primary"></i>
+                    <div>
+                        <p class="mb-0 text-uppercase small opacity-75 text-ai-secondary">Total Users</p>
+                        <h2 class="mb-0 text-primary">{{ user_profiles.count }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="stat-card text-white p-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-puzzle fs-2 me-3 text-success"></i>
+                    <div>
+                        <p class="mb-0 text-uppercase small opacity-75 text-ai-secondary">Total Puzzles</p>
+                        <h2 class="mb-0 text-success">{{ puzzles.count }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="stat-card text-white p-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-clock-history fs-2 me-3 text-warning"></i>
+                    <div>
+                        <p class="mb-0 text-uppercase small opacity-75 text-ai-secondary">Submissions</p>
+                        <h2 class="mb-0 text-warning">{{ submissions.count }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Sections -->
+    <div class="row g-4">
+        <!-- Recent Activity -->
+        <div class="col-12 col-xl-8">
+            <div class="dashboard-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h5 mb-0 text-light">Recent Activity</h3>
+                    <a href="#" class="btn btn-link btn-sm text-primary">View All</a>
+                </div>
+                
+                <div class="table-responsive rounded-3">
+                    <table class="table table-dark table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Puzzle</th>
+                                <th>Status</th>
+                                <th>Time</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for submission in submissions %}
+                            <tr class="cursor-pointer">
+                                <td class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-dark rounded-circle me-2 border border-ai"></div>
+                                    <span class="text-light">{{ submission.user.username }}</span>
+                                </td>
+                                <td>{{ submission.puzzle.title }}</td>
+                                <td>
+                                    <span class="badge {% if submission.is_correct %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                        {{ submission.is_correct|yesno:"✓ Correct,✗ Incorrect" }}
+                                    </span>
+                                </td>
+                                <td>{{ submission.time_taken }}</td>
+                                <td>{{ submission.submitted_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    No recent submissions found
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Overview -->
+        <div class="col-12 col-xl-4">
+            <div class="dashboard-section">
+                <h3 class="h5 mb-4 text-light">Puzzle Distribution</h3>
+                
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="category-card border-start border-primary p-3">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="mb-1 text-muted">Beginner</p>
+                                    <h4 class="mb-0 text-primary">{{ beginner_puzzles.count }}</h4>
+                                </div>
+                                <i class="bi bi-1-circle fs-3 text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="category-card border-start border-success p-3">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="mb-1 text-muted">Intermediate</p>
+                                    <h4 class="mb-0 text-success">{{ intermediate_puzzles.count }}</h4>
+                                </div>
+                                <i class="bi bi-2-circle fs-3 text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="category-card border-start border-warning p-3">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="mb-1 text-muted">Expert</p>
+                                    <h4 class="mb-0 text-warning">{{ expert_puzzles.count }}</h4>
+                                </div>
+                                <i class="bi bi-3-circle fs-3 text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends 'puzzle/base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .card {
+        background-color: var(--rpg-slate);
+        border: 1px solid rgba(218, 165, 32, 0.2);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    .card-title {
+        color: var(--rpg-gold);
+        font-family: 'MedievalSharp', cursive;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    .form-label {
+        color: var(--rpg-light);
+    }
+    .input-group-text {
+        background-color: var(--rpg-slate);
+        border-color: rgba(218, 165, 32, 0.2);
+        color: var(--rpg-gold);
+    }
+    .form-control {
+        background-color: var(--rpg-slate);
+        color: var(--rpg-light);
+        border-color: rgba(218, 165, 32, 0.2);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .form-control:focus {
+        border-color: var(--rpg-gold);
+        box-shadow: 0 0 5px rgba(218, 165, 32, 0.5);
+    }
+    .form-control.is-invalid {
+        border-color: var(--rpg-red);
+    }
+    .btn-primary {
+        background-color: var(--rpg-gold);
+        border-color: var(--rpg-gold);
+        color: #000;
+        transition: background-color 0.2s ease;
+    }
+    .btn-primary:hover {
+        background-color: rgba(218, 165, 32, 0.8);
+    }
+    .text-muted {
+        color: rgba(224, 224, 224, 0.7) !important;
+    }
+    .text-muted a {
+        color: var(--rpg-gold);
+        transition: color 0.2s ease;
+    }
+    .text-muted a:hover {
+        color: #ffca28;
+    }
+    .alert-danger {
+        background-color: rgba(139, 0, 0, 0.1);
+        border-color: var(--rpg-red);
+        color: var(--rpg-light);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </h2>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Invalid email/username or password
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">
+                                <i class="bi bi-envelope-at me-1"></i>Email or Username
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person-circle"></i>
+                                </span>
+                                <input type="text" 
+                                       name="username" 
+                                       class="form-control {% if form.errors %}is-invalid{% endif %}" 
+                                       id="username"
+                                       placeholder="Enter email or username"
+                                       autocomplete="username"
+                                       required
+                                       value="{% if form.username.value %}{{ form.username.value }}{% endif %}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="bi bi-key me-1"></i>Password
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input type="password" 
+                                       name="password" 
+                                       class="form-control {% if form.errors %}is-invalid{% endif %}" 
+                                       id="password" 
+                                       placeholder="Enter password"
+                                       autocomplete="current-password"
+                                       required>
+                            </div>
+                            <div class="d-flex justify-content-end mt-2">
+                                <a href="#" 
+                                   class="text-decoration-none small text-muted">
+                                    Forgot Password?
+                                </a>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </button>
+                        
+                        <div class="text-center border-top pt-3">
+                            <p class="text-muted mb-0">
+                                Don't have an account? 
+                                <a href="{% url 'puzzle:signup' %}" 
+                                   class="fw-medium">
+                                    Create Account
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,262 @@
+{% extends 'puzzle/base.html' %}
+
+{% block title %}Profile - {{ user.username }}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .profile-header {
+        background: var(--bg-medium);
+        padding: 2rem;
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+    }
+
+    .profile-info {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--rpg-gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        font-weight: bold;
+    }
+
+    .user-details {
+        flex-grow: 1;
+    }
+
+    .user-details h1 {
+        color: var(--rpg-gold);
+        margin-bottom: 0.5rem;
+    }
+
+    .user-meta {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .edit-profile-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--rpg-gold);
+        color: #000;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .edit-profile-btn:hover {
+        background: var(--rpg-gold-light);
+        transform: translateY(-2px);
+        color: #000;
+        text-decoration: none;
+    }
+
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .stat-card {
+        background: var(--bg-dark);
+        padding: 1.5rem;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--rpg-gold);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .progress-section {
+        margin-top: 2rem;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: var(--bg-dark);
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--rpg-gold);
+        width: 0;
+        transition: width 1s ease;
+    }
+
+    .progress-labels {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .solved-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .solved-list li {
+        padding: 1rem;
+        background: var(--bg-dark);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .solved-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    .solved-list .text-muted {
+        color: var(--text-light) !important;
+    }
+
+    .btn-retry {
+        background: var(--rpg-slate);
+        border: none;
+    }
+
+    .btn-retry:hover {
+        background: var(--rpg-slate-dark);
+    }
+
+    .btn-details {
+        background: var(--rpg-gold);
+        border: none;
+    }
+
+    .btn-details:hover {
+        background: var(--rpg-gold-dark);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="profile-header">
+        <div class="profile-info">
+            <div class="avatar">
+                {{ user.username|make_list|first|upper }}
+            </div>
+            <div class="user-details">
+                <h1>{{ user.username }}</h1>
+                <div class="user-meta">
+                    <span>Member since {{ user.date_joined|date:"F j, Y" }}</span>
+                    <a href="{% url 'puzzle:update_profile' %}" class="edit-profile-btn ms-3">
+                        <i class="bi bi-pencil-square"></i>
+                        Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value">
+                    <i class="bi bi-star-fill"></i>
+                    {{ total_xp }}
+                </div>
+                <div class="stat-label">Total XP</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">
+                    <i class="bi bi-trophy-fill"></i>
+                    {{ current_level }}
+                </div>
+                <div class="stat-label">Current Level</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">
+                    <i class="bi bi-check-circle-fill"></i>
+                    {{ puzzles_solved }}
+                </div>
+                <div class="stat-label">Puzzles Solved</div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-labels">
+                <span>Level {{ current_level }}</span>
+                <span>{{ xp_progress }}% to Level {{ current_level|add:"1" }}</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ xp_progress }}%"></div>
+            </div>
+            <div class="text-muted text-center mt-2">
+                {{ xp_for_next_level }} XP needed for next level
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Activity</h5>
+                    {% if recent_activity %}
+                    <div class="solved-list">
+                        {% for submission in recent_activity %}
+                        <li>
+                            <span class="text-muted">{{ submission.puzzle.title }}</span>
+                            <div class="btn-group">
+                                <a href="{% url 'puzzle:solve' submission.puzzle.id %}" class="btn btn-sm btn-retry">
+                                    <i class="bi bi-terminal me-1"></i>Retry
+                                </a>
+                                <a href="{% url 'puzzle:detail' submission.puzzle.id %}" class="btn btn-sm btn-details">
+                                    <i class="bi bi-eye me-1"></i>Details
+                                </a>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No recent activity. Start solving puzzles!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

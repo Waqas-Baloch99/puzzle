@@ -1,0 +1,313 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title }} | {{ site_title }}{% endblock %}</title>
+
+    <!-- Modern Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --primary: #daa520;
+            --primary-light: #f0c14b;
+            --primary-dark: #b7881b;
+            --secondary: #306998;
+            --secondary-light: #5a9fd4;
+            --accent: #ffd43b;
+            --accent-light: #ffe873;
+            --bg-dark: #111827;
+            --bg-medium: #1f2937;
+            --bg-light: #374151;
+            --text-light: #f9fafb;
+            --text-muted: #9ca3af;
+            --border-color: rgba(218, 165, 32, 0.3);
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        .navbar {
+            background: var(--bg-medium) !important;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: var(--primary) !important;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            color: var(--text-light) !important;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary) !important;
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            color: var(--primary) !important;
+            font-weight: 600;
+        }
+
+        .btn-outline-neon {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline-neon:hover {
+            background: var(--primary);
+            color: var(--bg-dark);
+        }
+
+        .card {
+            background: var(--bg-medium);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .card-header {
+            background: var(--bg-light);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--primary);
+        }
+
+        .stats-card {
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(218, 165, 32, 0.2);
+        }
+
+        .table {
+            color: var(--text-light);
+        }
+
+        .table thead th {
+            background: var(--bg-light);
+            color: var(--primary);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .table tbody tr:hover {
+            background: rgba(218, 165, 32, 0.1);
+        }
+
+        .pagination .page-link {
+            background: var(--bg-medium);
+            border-color: var(--border-color);
+            color: var(--text-light);
+        }
+
+        .pagination .page-link:hover {
+            background: var(--primary);
+            color: var(--bg-dark);
+        }
+
+        .pagination .active .page-link {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--bg-dark);
+        }
+
+        .alert {
+            border: 1px solid var(--border-color);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #ecfdf5;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #fef2f2;
+        }
+
+        .form-control, .form-select {
+            background: var(--bg-light);
+            border-color: var(--border-color);
+            color: var(--text-light);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: var(--bg-light);
+            border-color: var(--primary);
+            color: var(--text-light);
+            box-shadow: 0 0 0 0.25rem rgba(218, 165, 32, 0.25);
+        }
+
+        .dropdown-menu {
+            background: var(--bg-medium);
+            border: 1px solid var(--border-color);
+        }
+
+        .dropdown-item {
+            color: var(--text-light);
+        }
+
+        .dropdown-item:hover {
+            background: var(--bg-light);
+            color: var(--primary);
+        }
+
+        .admin-content {
+            padding: 20px;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-action-btn {
+            background: var(--primary);
+            color: var(--bg-dark);
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3);
+            color: var(--bg-dark);
+            text-decoration: none;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Modern Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'custom_admin:custom-dashboard' %}">
+                <i class="bi bi-puzzle-fill me-2"></i>PuzzleHub
+            </a>
+
+            <button class="navbar-toggler" type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#adminNav"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="adminNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'custom-dashboard' %}active{% endif %}" 
+                           href="{% url 'custom_admin:custom-dashboard' %}">
+                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'manage-users' %}active{% endif %}" 
+                           href="{% url 'custom_admin:manage-users' %}">
+                            <i class="bi bi-people me-1"></i>Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'roadmap' %}active{% endif %}" 
+                           href="{% url 'custom_admin:roadmap' %}">
+                            <i class="bi bi-map me-1"></i>Python Roadmap
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'manage-puzzles' %}active{% endif %}" 
+                           href="{% url 'custom_admin:manage-puzzles' %}">
+                            <i class="bi bi-puzzle me-1"></i>Puzzles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'manage-submissions' %}active{% endif %}" 
+                           href="{% url 'custom_admin:manage-submissions' %}">
+                            <i class="bi bi-file-earmark-bar-graph me-1"></i>Submissions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'generate-puzzles' %}active{% endif %}" 
+                           href="{% url 'custom_admin:generate-puzzles' %}">
+                            <i class="bi bi-magic me-1"></i>Generate Puzzles
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- User Panel -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="user-panel">
+                        <i class="bi bi-person-circle me-2"></i>
+                        <span class="d-none d-md-inline">
+                            {{ request.user.get_username|default:"Guest" }}
+                        </span>
+                    </div>
+                    <div class="dropdown">
+                        <a href="#" class="btn btn-outline-neon btn-sm rounded-pill" 
+                           role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'admin:index' %}">
+                                <i class="bi bi-shield-lock me-2"></i>Django Admin
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'admin:logout' %}">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+        <div class="container-fluid px-4">
+            <!-- System Messages -->
+            {% if messages %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" 
+                         role="alert">
+                        <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Main Content -->
+            <div class="admin-content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Modern Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

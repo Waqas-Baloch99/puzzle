@@ -1,0 +1,255 @@
+{% extends "puzzle/base.html" %}
+
+{% block title %}{{ puzzle.title }} - Solve Puzzle{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .puzzle-container {
+        max-width: 1200px; /* Increased from 800px */
+        margin: 0 auto;
+        padding: 3rem; /* Increased from 2rem */
+    }
+
+    .puzzle-header {
+        margin-bottom: 3rem; /* Increased from 2rem */
+    }
+
+    .puzzle-title {
+        color: var(--rpg-gold);
+        font-size: 3rem; /* Increased from 2rem */
+        font-weight: 700;
+        margin-bottom: 1.5rem; /* Increased from 1rem */
+    }
+
+    .puzzle-description {
+        color: var(--text-light);
+        font-size: 1.3rem; /* Increased from 1.1rem */
+        line-height: 1.8; /* Increased from 1.6 */
+        margin-bottom: 3rem; /* Increased from 2rem */
+        white-space: pre-wrap;
+    }
+
+    .puzzle-meta {
+        display: flex;
+        gap: 1.5rem; /* Increased from 1rem */
+        margin-bottom: 2rem; /* Increased from 1.5rem */
+    }
+
+    .badge {
+        padding: 0.75rem 1.5rem; /* Increased from 0.5rem 1rem */
+        border-radius: 25px; /* Increased from 20px */
+        font-size: 1rem; /* Increased from 0.9rem */
+        font-weight: 600;
+    }
+
+    .badge-difficulty {
+        background-color: var(--bg-medium);
+        color: var(--text-light);
+    }
+
+    .badge-xp {
+        background-color: var(--rpg-gold);
+        color: #000;
+    }
+
+    .badge-type {
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+    }
+
+    .solution-container {
+        background: var(--bg-medium);
+        border-radius: 15px; /* Increased from 10px */
+        padding: 3rem; /* Increased from 2rem */
+        margin-bottom: 3rem; /* Increased from 2rem */
+    }
+
+    .mcq-options {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; /* Increased from 1rem */
+        margin-bottom: 3rem; /* Increased from 2rem */
+    }
+
+    .mcq-option {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem; /* Increased from 1rem */
+        background: var(--bg-dark);
+        border-radius: 10px; /* Increased from 8px */
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .mcq-option:hover {
+        background: var(--bg-light);
+        transform: translateX(8px); /* Increased from 5px */
+    }
+
+    .mcq-option input[type="radio"] {
+        margin-right: 1.5rem; /* Increased from 1rem */
+        width: 25px; /* Increased from 20px */
+        height: 25px; /* Increased from 20px */
+    }
+
+    .mcq-option label {
+        color: var(--text-light);
+        font-size: 1.1rem; /* Increased for readability */
+        width: 100%;
+    }
+
+    .mcq-option.correct-answer {
+        background: #2ecc71;
+        color: #fff;
+    }
+
+    .mcq-option.selected-answer {
+        background: #3498db;
+        color: #fff;
+    }
+
+    .code-editor {
+        width: 100%;
+        min-height: 400px; /* Increased from 300px */
+        background: var(--bg-dark);
+        border-radius: 10px; /* Increased from 8px */
+        padding: 1.5rem; /* Increased from 1rem */
+        font-family: 'Courier New', monospace;
+        font-size: 1.2rem; /* Increased from 1rem */
+        color: var(--text-light);
+        margin-bottom: 1.5rem; /* Increased from 1rem */
+    }
+
+    .submit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem; /* Increased from 0.5rem */
+        background: var(--rpg-gold);
+        color: #000;
+        padding: 1rem 2rem; /* Increased from 0.75rem 1.5rem */
+        border-radius: 10px; /* Increased from 8px */
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+        background: var(--rpg-gold-light);
+        transform: translateY(-3px); /* Increased from -2px */
+        box-shadow: 0 6px 15px rgba(218, 165, 32, 0.3); /* Adjusted shadow */
+    }
+
+    .feedback-container {
+        margin-top: 3rem; /* Increased from 2rem */
+        padding: 2rem; /* Increased from 1.5rem */
+        border-radius: 10px; /* Increased from 8px */
+        background: var(--bg-medium);
+    }
+
+    .feedback-success {
+        color: #2ecc71;
+    }
+
+    .feedback-error {
+        color: #e74c3c;
+    }
+
+    .navigation-buttons {
+        display: flex;
+        gap: 1.5rem; /* Increased from 1rem */
+        margin-top: 3rem; /* Increased from 2rem */
+    }
+
+    .btn-secondary {
+        background: var(--bg-dark);
+        color: var(--text-light);
+        padding: 1rem 2rem; /* Increased from 0.75rem 1.5rem */
+        border-radius: 10px; /* Increased from 8px */
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-light);
+        color: var(--text-light);
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="puzzle-container">
+    <div class="puzzle-header">
+        <h1 class="puzzle-title">{{ puzzle.title }}</h1>
+        <div class="puzzle-meta">
+            <span class="badge badge-difficulty">{{ puzzle.get_level_display }}</span>
+            <span class="badge badge-xp">{{ puzzle.xp_reward }} XP</span>
+            <span class="badge badge-type">{{ puzzle.puzzle_type }}</span>
+        </div>
+        <div class="puzzle-description">{{ puzzle.description }}</div>
+    </div>
+
+    <div class="solution-container">
+        {% if puzzle.puzzle_type == 'MCQ' %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="mcq-options">
+                    {% for option in mcq_options %}
+                        <div class="mcq-option {% if submission.is_correct and option.key == puzzle.solution %}correct-answer{% endif %} {% if selected_answer == option.key %}selected-answer{% endif %}">
+                            <input type="radio" name="answer" value="{{ option.key }}" id="option-{{ option.key }}"
+                                {% if selected_answer == option.key %}checked{% endif %}
+                                {% if is_solved %}disabled{% endif %}
+                                required>
+                            <label for="option-{{ option.key }}">{{ option.value }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if not is_solved %}
+                    <button type="submit" class="submit-btn">
+                        <i class="bi bi-check-circle"></i>
+                        Submit Answer
+                    </button>
+                {% endif %}
+            </form>
+        {% else %}
+            <form method="post">
+                {% csrf_token %}
+                <textarea name="code" class="code-editor" required>{{ form.code.value|default:puzzle.starter_code }}</textarea>
+                <button type="submit" class="submit-btn">
+                    <i class="bi bi-play-circle"></i>
+                    Run Code
+                </button>
+            </form>
+        {% endif %}
+
+        {% if submission %}
+            <div class="feedback-container {% if submission.is_correct %}feedback-success{% else %}feedback-error{% endif %}">
+                {% if submission.is_correct %}
+                    <p>✅ Correct solution! You earned {{ puzzle.xp_reward }} XP!</p>
+                {% else %}
+                    <p>❌ Incorrect solution. Try again!</p>
+                    {% if submission.feedback %}
+                        <p>{{ submission.feedback }}</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="navigation-buttons">
+        <a href="{% url 'puzzle:puzzles' %}" class="btn-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Puzzles
+        </a>
+        {% if next_puzzle %}
+            <a href="{% url 'puzzle:solve' next_puzzle.id %}" class="submit-btn">
+                Next Puzzle
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

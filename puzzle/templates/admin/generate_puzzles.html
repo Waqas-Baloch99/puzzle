@@ -1,0 +1,174 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .puzzle-management {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+    .action-header {
+        background: var(--ai-dark);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px var(--ai-shadow);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-control, .form-select {
+        background: var(--ai-black);
+        color: var(--ai-secondary);
+        border-color: rgba(0, 212, 255, 0.2);
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--ai-neon);
+        box-shadow: 0 0 5px var(--ai-shadow);
+    }
+    #message-container {
+        min-height: 60px;
+        margin-bottom: 1.5rem;
+    }
+    .form-select[multiple] {
+        height: 250px;
+    }
+    .form-label {
+        font-weight: 500;
+        color: var(--ai-secondary);
+    }
+    .description-text {
+        color: var(--ai-muted);
+        font-size: 0.9rem;
+    }
+    .topic-status {
+        float: right;
+        font-size: 0.9em;
+        color: var(--ai-neon);
+    }
+    .topic-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    }
+    .topic-item:last-child {
+        border-bottom: none;
+    }
+    .topic-title {
+        font-weight: 500;
+        color: var(--ai-secondary);
+    }
+    .topic-description {
+        font-size: 0.85rem;
+        color: var(--ai-muted);
+    }
+    .indent-1 {
+        padding-left: 1.5rem !important;
+    }
+    .indent-2 {
+        padding-left: 3rem !important;
+    }
+    .parent-topic {
+        font-weight: 600;
+        color: var(--ai-primary);
+    }
+    select option {
+        padding: 0.5rem;
+    }
+    select option.indent-1::before {
+        content: "└─";
+        margin-right: 0.5rem;
+    }
+    select option.indent-2::before {
+        content: "└──";
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="puzzle-management">
+    <div class="action-header">
+        <h1 class="h3 mb-4 text-light animate-glow">
+            <i class="bi bi-puzzle me-2"></i>Generate Puzzles from Roadmap
+        </h1>
+
+        <div id="message-container">
+            {% if success %}
+                <div class="alert alert-success shadow-sm">
+                    <i class="bi bi-check-circle-fill me-2"></i>{{ success }}
+                </div>
+            {% endif %}
+            {% if error %}
+                <div class="alert alert-danger shadow-sm">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+                </div>
+            {% endif %}
+        </div>
+
+        <form id="generate-form" method="post" class="mt-4">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="topics" class="form-label">Select Roadmap Topics:</label>
+                <select class="form-select" id="topics" name="topics" multiple required>
+                    {% for topic in roadmap_topics %}
+                        <option value="{{ topic.id }}" class="{% if topic.indent_level == 1 %}indent-1{% elif topic.indent_level == 2 %}indent-2{% endif %} {% if not topic.parent %}parent-topic{% endif %}">
+                            {% if topic.indent_level > 0 %}└─ {% endif %}{{ topic.title }}
+                            <span class="topic-status">
+                                {% if topic.puzzles.count > 0 %}
+                                    ({{ topic.puzzles.count }} existing puzzles)
+                                {% else %}
+                                    (no puzzles)
+                                {% endif %}
+                            </span>
+                        </option>
+                    {% endfor %}
+                </select>
+                <small class="description-text">Hold Ctrl/Cmd to select multiple topics. New puzzles will be added to selected topics.</small>
+            </div>
+            <div class="form-group">
+                <label for="num_mcqs" class="form-label">Number of Beginner MCQs per Topic:</label>
+                <input type="number" class="form-control" id="num_mcqs" name="num_mcqs" value="0" min="0" max="10" required>
+                <small class="description-text">Enter 0-10. MCQs will be beginner-level Python questions.</small>
+            </div>
+            <div class="form-group">
+                <label for="num_coding" class="form-label">Number of Intermediate Coding Puzzles per Topic:</label>
+                <input type="number" class="form-control" id="num_coding" name="num_coding" value="0" min="0" max="10" required>
+                <small class="description-text">Enter 0-10. Coding puzzles will be intermediate-level Python challenges.</small>
+            </div>
+            <p class="description-text mb-4" id="form-description">
+                Generate puzzles for the selected Python roadmap topics. New puzzles will be added to topics without replacing existing ones.
+            </p>
+            <button type="submit" class="btn btn-outline-neon" id="generate-btn">
+                <i class="bi bi-magic me-2"></i>Generate Puzzles
+            </button>
+            <a href="{% url 'custom_admin:manage-puzzles' %}" class="btn btn-secondary ms-2">
+                <i class="bi bi-eye me-2"></i>View Puzzles
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script>
+    document.getElementById('generate-form').addEventListener('submit', function(event) {
+        const messageContainer = document.getElementById('message-container');
+        messageContainer.innerHTML = ''; // Clear previous messages
+        
+        const topics = document.getElementById('topics');
+        const numMcqs = parseInt(document.getElementById('num_mcqs').value);
+        const numCoding = parseInt(document.getElementById('num_coding').value);
+
+        if (topics.selectedOptions.length === 0) {
+            event.preventDefault();
+            messageContainer.innerHTML = '<div class="alert alert-danger shadow-sm"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please select at least one topic</div>';
+        } else if (numMcqs === 0 && numCoding === 0) {
+            event.preventDefault();
+            messageContainer.innerHTML = '<div class="alert alert-danger shadow-sm"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please specify at least one MCQ or coding puzzle to generate</div>';
+        }
+    });
+</script>
+{% endblock %}

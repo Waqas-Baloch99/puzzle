@@ -1,0 +1,75 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .puzzle-management {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+    .action-header {
+        background: var(--ai-dark);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px var(--ai-shadow);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+    }
+    #message-container {
+        min-height: 60px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="puzzle-management">
+    <div class="action-header">
+        <h1 class="h3 mb-4 text-light animate-glow">
+            <i class="bi bi-trash me-2"></i>{{ title }}
+        </h1>
+
+        <div id="message-container">
+            {% if success %}
+                <div class="alert alert-success shadow-sm">
+                    <i class="bi bi-check-circle-fill me-2"></i>{{ success }}
+                </div>
+            {% endif %}
+            {% if error %}
+                <div class="alert alert-danger shadow-sm">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+                </div>
+            {% endif %}
+        </div>
+
+        {% if not success %}
+            <p class="text-muted mb-4">
+                Are you sure you want to delete the puzzle "<strong>{{ puzzle.title }}</strong>"? This action cannot be undone.
+            </p>
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                <input type="hidden" name="confirm" value="yes">
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-trash me-2"></i>Yes, Delete
+                </button>
+                <a href="{% url 'custom_admin:manage-puzzles' %}" class="btn btn-secondary ms-2">
+                    <i class="bi bi-x-circle me-2"></i>No, Cancel
+                </a>
+            </form>
+        {% else %}
+            <p class="text-muted mb-4">
+                Deletion completed. Redirecting to puzzle management...
+            </p>
+            <a href="{% url 'custom_admin:manage-puzzles' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Puzzles
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if success and redirect %}
+    <script>
+        setTimeout(() => window.location.href = "{{ redirect }}", 2000);
+    </script>
+{% endif %}
+{% endblock %}
